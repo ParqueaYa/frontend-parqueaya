@@ -8,7 +8,7 @@ export const LoginHeader = () => {
             local_parking
           </span>
                     <h1 className="text-xl font-bold tracking-tight uppercase">
-                        AparcaYa
+                        ParqueaYa
                     </h1>
                 </div>
                 <div className="text-xs font-medium text-slate-500 uppercase tracking-widest">
