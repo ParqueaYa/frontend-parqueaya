@@ -1,31 +1,51 @@
-// components/AccesoDenegado.jsx
-import Link from "next/link"; // ← Corregido: importación de Next.js
+// src/components/accesodenegado/AccesoDenegado.jsx
+import Link from 'next/link';
 
 export function AccesoDenegado() {
     return (
-        <div className="p-5">
-            {/* Title */}
-            <div className="p-3 bg-primary border border-black mb-5">
-                <h1 className="m-0 text-lg text-white">ACCESO DENEGADO</h1>
+        <div className="w-full max-w-[400px] bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 p-8 shadow-sm">
+
+            {/* Título: Mismo estilo que 'Acceso Usuarios' */}
+            <div className="mb-8">
+                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 uppercase tracking-tight">
+                    Acceso Denegado
+                </h2>
+                {/* Línea decorativa 'primary' idéntica al Login */}
+                <div className="h-1 w-12 bg-primary mt-2"></div>
             </div>
 
-            <div className="py-[60px] px-10 text-center">
-                <div className="text-7xl font-bold text-red-600 mb-5">
-                    ⛔
+            <div className="py-4 text-center">
+                {/* Icono de Material Symbols: Lock Person */}
+                <div className="mb-6 flex justify-center">
+          <span className="material-symbols-outlined text-[80px] text-primary leading-none">
+            lock_person
+          </span>
                 </div>
-                <div className="text-2xl font-bold mb-4">
-                    ACCESO DENEGADO
+
+                <div className="text-lg font-bold mb-4 text-slate-800 dark:text-slate-200 uppercase tracking-tight">
+                    ¡Alto ahí!
                 </div>
-                <div className="text-base text-gray-500 mb-10">
-                    No tienes permisos para acceder a esta página.
+
+                <div className="text-sm text-slate-500 dark:text-slate-400 mb-10 leading-relaxed">
+                    No tienes permisos para acceder a esta página. <br/>
+                    Contacta con el administrador del sistema.
                 </div>
-                <Link href="/public" className="no-underline"> {/* ← Corregido: href en lugar de to */}
+
+                {/* Botón: Idéntico al de 'Iniciar Sesión' */}
+                <Link href="/" className="no-underline">
                     <button
-                        className="py-3 px-[30px] bg-primary text-white border border-black text-sm font-bold cursor-pointer hover:bg-primary-dark transition-colors"
+                        className="w-full bg-primary hover:bg-[#0a4548] text-white font-bold py-3 text-sm uppercase tracking-wider transition-colors"
                     >
-                        VOLVER AL DASHBOARD
+                        VOLVER AL INICIO
                     </button>
                 </Link>
+            </div>
+
+            {/* Footer de la tarjeta: Coincide con el Login */}
+            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
+                <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+                    Sistema de Gestión ParqueaYa
+                </p>
             </div>
         </div>
     );
