@@ -1,7 +1,7 @@
-// components/login/LoginForm.jsx
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -55,12 +55,13 @@ export const LoginForm = () => {
               >
                 Contraseña
               </label>
-              <a
+              {/* RUTA: Recuperación de clave */}
+              <Link
                   className="text-[10px] uppercase text-primary hover:underline font-bold"
-                  href="#"
+                  href="/auth/forgot-password"
               >
                 ¿Olvidó su clave?
-              </a>
+              </Link>
             </div>
             <input
                 className="form-input block w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:border-primary focus:ring-0 h-10"
@@ -112,9 +113,13 @@ export const LoginForm = () => {
         <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
           <p className="text-xs text-slate-500 uppercase">
             ¿No tiene una cuenta?
-            <a className="text-primary font-bold hover:underline ml-1 tracking-tight" href="#">
+            {/* RUTA: Registro de usuario */}
+            <Link
+                className="text-primary font-bold hover:underline ml-1 tracking-tight"
+                href="/auth/register"
+            >
               Registrarse
-            </a>
+            </Link>
           </p>
         </div>
       </div>
