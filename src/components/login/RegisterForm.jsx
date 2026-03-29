@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useGoogleLogin } from '@react-oauth/google'; // Importamos el hook
 
-// Componente fuera para cumplir con las reglas de ESLint
 const EyeIcon = ({ visible }) => (
     visible ? (
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>
@@ -15,6 +15,7 @@ const EyeIcon = ({ visible }) => (
 
 export const RegisterForm = () => {
     const router = useRouter();
+    const [loading, setLoading] = useState(false); // Para mostrar estado de carga
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -32,20 +33,43 @@ export const RegisterForm = () => {
 
     const passwordsMatch = formData.password === formData.confirmPassword;
     const showMatchMessage = formData.confirmPassword.length > 0;
-
-    // Validación de formulario completo
     const isFormComplete = Object.values(formData).every(value => value.trim() !== '');
-    const isButtonDisabled = !isFormComplete || !passwordsMatch;
+    const isButtonDisabled = !isFormComplete || !passwordsMatch || loading;
 
-    const handleSubmit = (e) => {
+    // --- LÓGICA DE SPRING BOOT ---
+    const handleGoogleRegister = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            setLoading(true);
+            try {
+                // Aquí enviamos el access_token a Spring Boot
+                const response = await fetch('http://localhost:8080/api/v1/auth/google', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: tokenResponse.access_token }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    // Guardar JWT de Spring Boot en localStorage o Cookies
+                    localStorage.setItem('token', data.jwt);
+                    router.push('/dashboard');
+                }
+            } catch (error) {
+                console.error("Error conectando con Spring Boot", error);
+            } finally {
+                setLoading(false);
+            }
+        },
+        onError: () => console.log('Login con Google falló'),
+    });
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
         if (isButtonDisabled) return;
-        console.log('Registro exitoso:', formData);
-        router.push('/');
-    };
 
-    const handleGoogleRegister = () => {
-        console.log('Registro con Google iniciado');
+        // Aquí iría tu fetch normal a Spring Boot para registro manual
+        console.log('Enviando a Spring Boot:', formData);
+        router.push('/');
     };
 
     return (
@@ -58,7 +82,6 @@ export const RegisterForm = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-                {/* Nombre */}
                 <div className="space-y-1">
                     <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-400">Nombre completo</label>
                     <input
@@ -71,7 +94,6 @@ export const RegisterForm = () => {
                     />
                 </div>
 
-                {/* Email */}
                 <div className="space-y-1">
                     <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-400">Correo electrónico</label>
                     <input
@@ -84,7 +106,6 @@ export const RegisterForm = () => {
                     />
                 </div>
 
-                {/* Contraseña */}
                 <div className="space-y-1">
                     <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-400">Contraseña</label>
                     <div className="relative">
@@ -96,24 +117,19 @@ export const RegisterForm = () => {
                             className="form-input block w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:border-primary focus:ring-0 h-10 pr-10"
                             onChange={handleChange}
                         />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
-                        >
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                             <EyeIcon visible={showPassword} />
                         </button>
                     </div>
                 </div>
 
-                {/* Confirmar Contraseña */}
                 <div className="space-y-1">
                     <div className="flex justify-between items-center">
                         <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-400">Confirmar contraseña</label>
                         {showMatchMessage && (
                             <span className={`text-[10px] font-bold uppercase ${passwordsMatch ? 'text-green-500' : 'text-red-500'}`}>
-                {passwordsMatch ? '✓ Coinciden' : '✗ No coinciden'}
-              </span>
+                                {passwordsMatch ? '✓ Coinciden' : '✗ No coinciden'}
+                            </span>
                         )}
                     </div>
                     <div className="relative">
@@ -127,11 +143,7 @@ export const RegisterForm = () => {
                             }`}
                             onChange={handleChange}
                         />
-                        <button
-                            type="button"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors"
-                        >
+                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-primary transition-colors">
                             <EyeIcon visible={showConfirmPassword} />
                         </button>
                     </div>
@@ -146,10 +158,9 @@ export const RegisterForm = () => {
                             : 'bg-primary hover:bg-[#0a4548] shadow-md active:transform active:scale-[0.98]'
                     }`}
                 >
-                    Registrarse
+                    {loading ? 'Cargando...' : 'Registrarse'}
                 </button>
 
-                {/* Separador */}
                 <div className="relative py-2">
                     <div className="absolute inset-0 flex items-center">
                         <div className="w-full border-t border-slate-300 dark:border-slate-700"></div>
@@ -159,11 +170,11 @@ export const RegisterForm = () => {
                     </div>
                 </div>
 
-                {/* Botón Google */}
                 <button
                     type="button"
-                    onClick={handleGoogleRegister}
-                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-2.5 text-sm font-medium flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                    onClick={() => handleGoogleRegister()}
+                    disabled={loading}
+                    className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 py-2.5 text-sm font-medium flex items-center justify-center gap-2 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
                 >
                     <svg className="w-4 h-4" viewBox="0 0 24 24">
                         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -174,15 +185,7 @@ export const RegisterForm = () => {
                     Google
                 </button>
             </form>
-
-            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
-                <p className="text-xs text-slate-500 uppercase">
-                    ¿Ya tienes cuenta?
-                    <Link href="/" className="text-primary font-bold hover:underline ml-1">
-                        Inicia Sesión
-                    </Link>
-                </p>
-            </div>
+            {/* ... footer ... */}
         </div>
     );
 };

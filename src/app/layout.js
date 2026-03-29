@@ -1,5 +1,5 @@
-// app/layout.js
 import './globals.css';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 export const metadata = {
     title: 'Iniciar Sesión - ParqueaYa',
@@ -10,6 +10,7 @@ export default function RootLayout({ children }) {
     return (
         <html lang="es">
         <head>
+            {/* Google Fonts */}
             <link
                 href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
                 rel="stylesheet"
@@ -19,8 +20,11 @@ export default function RootLayout({ children }) {
                 rel="stylesheet"
             />
         </head>
-        <body> {/* <--- ESTA ES LA CLAVE */}
-        {children}
+        <body>
+        {/* Envolvemos TODA la aplicación con el Provider de Google */}
+        <GoogleOAuthProvider clientId="PONER_AQUI_CLIENT_ID_DE_GOOGLE_CONSOLA">
+            {children}
+        </GoogleOAuthProvider>
         </body>
         </html>
     );
