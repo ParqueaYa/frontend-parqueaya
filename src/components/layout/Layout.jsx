@@ -9,71 +9,97 @@ export function Layout({ children }) {
     const router = useRouter();
 
     const menuItems = [
-        { path: '/dashboard', label: 'Dashboard' },
-        { path: '/entradas', label: 'Entradas' },
-        { path: '/salidas', label: 'Salidas' },
-        { path: '/vehiculos-dentro', label: 'Vehículos dentro' },
-        { path: '/cupos', label: 'Cupos' },
-        { path: '/tarifas', label: 'Tarifas' },
-        { path: '/usuarios', label: 'Usuarios' },
-        { path: '/reportes', label: 'Reportes' },
-        { path: '/facturacion', label: 'Facturación' },
-        { path: '/perfil', label: 'Perfil' },
-        { path: '/configuracion', label: 'Configuración' },
+        { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
+        { path: '/entradas', label: 'Entradas', icon: 'login' },
+        { path: '/salidas', label: 'Salidas', icon: 'logout' },
+        { path: '/vehiculos-dentro', label: 'Vehículos dentro', icon: 'directions_car' },
+        { path: '/cupos', label: 'Cupos', icon: 'grid_view' },
+        { path: '/tarifas', label: 'Tarifas', icon: 'payments' },
+        { path: '/usuarios', label: 'Usuarios', icon: 'group' },
+        { path: '/reportes', label: 'Reportes', icon: 'analytics' },
+        { path: '/facturacion', label: 'Facturación', icon: 'receipt_long' },
+        { path: '/perfil', label: 'Perfil', icon: 'account_circle' },
+        { path: '/configuracion', label: 'Configuración', icon: 'settings' },
     ];
 
     const handleLogout = () => {
-        // Aquí va la lógica de logout
-        router.push('/login');
+        router.push('/');
     };
 
     return (
-        <div className="flex h-screen bg-background-light">
+        <div className="flex h-screen bg-white dark:bg-slate-950">
             {/* Left Sidebar */}
-            <aside className="w-56 bg-primary flex-shrink-0">
-                <div className="p-4 border-b border-primary-dark">
-                    <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-white text-2xl">
-              local_parking
-            </span>
-                        <h1 className="text-white text-xl font-bold tracking-tight uppercase">
-                            ParqueaYa
+            <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
+                <div className="p-6 border-b border-slate-800">
+                    <div className="flex items-center gap-3">
+                        <div className="bg-primary p-1.5 shadow-lg">
+                            <span className="material-symbols-outlined text-white text-2xl block">
+                                local_parking
+                            </span>
+                        </div>
+                        <h1 className="text-white text-xl font-bold tracking-tighter uppercase italic">
+                            Parquea<span className="text-primary">Ya</span>
                         </h1>
                     </div>
                 </div>
-                <nav className="p-2">
-                    {menuItems.map((item) => (
-                        <Link
-                            key={item.path}
-                            href={item.path}
-                            className={`block px-3 py-2 mb-1 text-white hover:bg-primary-dark transition-colors ${
-                                pathname === item.path ? 'bg-primary-dark' : ''
-                            }`}
-                        >
-                            {item.label}
-                        </Link>
-                    ))}
+
+                <nav className="flex-1 overflow-y-auto p-4 space-y-1 custom-scrollbar">
+                    {menuItems.map((item) => {
+                        const isActive = pathname === item.path;
+                        return (
+                            <Link
+                                key={item.path}
+                                href={item.path}
+                                className={`flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-widest transition-all duration-200 border-l-2 ${
+                                    isActive
+                                        ? 'bg-slate-800 text-primary border-primary'
+                                        : 'text-slate-400 border-transparent hover:text-slate-100 hover:bg-slate-800/50'
+                                }`}
+                            >
+                                <span className="material-symbols-outlined text-xl">
+                                    {item.icon}
+                                </span>
+                                {item.label}
+                            </Link>
+                        );
+                    })}
                 </nav>
+
+                <div className="p-4 border-t border-slate-800 bg-slate-900/50">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-xs font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                    >
+                        <span className="material-symbols-outlined text-xl">logout</span>
+                        Cerrar Sesión
+                    </button>
+                </div>
             </aside>
 
             {/* Main Content Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Top Header */}
-                <header className="bg-white border-b-2 border-gray-200 h-16 flex items-center justify-between px-6 flex-shrink-0">
-                    <h2 className="text-gray-800 font-semibold">Sistema de Parqueadero</h2>
-                    <div className="flex items-center gap-4">
-                        <span className="text-gray-600">Usuario conectado</span>
-                        <button
-                            onClick={handleLogout}
-                            className="px-4 py-1 bg-primary text-white border border-primary-dark hover:bg-primary-dark transition-colors"
-                        >
-                            Logout
-                        </button>
+                <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 h-16 flex items-center justify-between px-8 flex-shrink-0">
+                    <div className="flex items-center gap-2">
+                        <div className="h-1 w-8 bg-primary"></div>
+                        <h2 className="text-slate-900 dark:text-slate-100 font-bold uppercase text-sm tracking-widest">
+                            {menuItems.find(i => i.path === pathname)?.label || 'Sistema'}
+                        </h2>
+                    </div>
+
+                    <div className="flex items-center gap-6">
+                        <div className="hidden md:flex flex-col items-end">
+                            <span className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">Administrador</span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100">lcarlosvazap@gmail.com</span>
+                        </div>
+                        <div className="h-10 w-10 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                            <span className="material-symbols-outlined text-slate-400">person</span>
+                        </div>
                     </div>
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-auto p-6 bg-background-light">
+                <main className="flex-1 overflow-auto p-8 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
                     {children}
                 </main>
             </div>

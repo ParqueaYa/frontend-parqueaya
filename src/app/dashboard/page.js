@@ -1,5 +1,4 @@
 // app/dashboard/page.js
-// app/dashboard/page.js
 import { Layout } from '@/components/layout/Layout';
 import { Dashboard } from '@/components/dashboard/Dashboard';
 import { LoginHeader } from '@/components/login/LoginHeader';
