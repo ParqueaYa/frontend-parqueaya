@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useGoogleLogin } from '@react-oauth/google'; // Importamos el hook
+import { useGoogleLogin } from '@react-oauth/google';
 
 const EyeIcon = ({ visible }) => (
     visible ? (
@@ -15,7 +15,7 @@ const EyeIcon = ({ visible }) => (
 
 export const RegisterForm = () => {
     const router = useRouter();
-    const [loading, setLoading] = useState(false); // Para mostrar estado de carga
+    const [loading, setLoading] = useState(false);
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -36,12 +36,10 @@ export const RegisterForm = () => {
     const isFormComplete = Object.values(formData).every(value => value.trim() !== '');
     const isButtonDisabled = !isFormComplete || !passwordsMatch || loading;
 
-    // --- LÓGICA DE SPRING BOOT ---
     const handleGoogleRegister = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
             setLoading(true);
             try {
-                // Aquí enviamos el access_token a Spring Boot
                 const response = await fetch('http://localhost:8080/api/v1/auth/google', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -50,7 +48,6 @@ export const RegisterForm = () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    // Guardar JWT de Spring Boot en localStorage o Cookies
                     localStorage.setItem('token', data.jwt);
                     router.push('/dashboard');
                 }
@@ -67,7 +64,6 @@ export const RegisterForm = () => {
         e.preventDefault();
         if (isButtonDisabled) return;
 
-        // Aquí iría tu fetch normal a Spring Boot para registro manual
         console.log('Enviando a Spring Boot:', formData);
         router.push('/');
     };
@@ -185,7 +181,15 @@ export const RegisterForm = () => {
                     Google
                 </button>
             </form>
-            {/* ... footer ... */}
+
+            <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-800 text-center">
+                <p className="text-xs text-slate-500 uppercase">
+                    ¿Ya tiene una cuenta?
+                    <Link href="/" className="text-primary font-bold hover:underline ml-1 tracking-tight">
+                        Iniciar Sesión
+                    </Link>
+                </p>
+            </div>
         </div>
     );
 };
