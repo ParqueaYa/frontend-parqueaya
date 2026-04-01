@@ -1,26 +1,28 @@
+/* app/globals.css */
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Definición de colores para v4 */
+@theme {
+  --color-primary: #e77e23;
+  --color-primary-dark: #d66d12;
+  --color-background-light: #ffffff;
+  --color-background-dark: #f8f7f6;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Estilos específicos del ERP: Forzar bordes cuadrados */
+.form-input,
+button,
+input,
+.login-box {
+  border-radius: 0 !important;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Aseguramos que el fondo del body sea siempre claro por ahora */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background-light);
+}
+
+/* Iconos de Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
