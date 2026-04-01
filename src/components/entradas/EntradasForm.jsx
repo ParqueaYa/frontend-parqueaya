@@ -8,26 +8,22 @@ export function EntradasForm() {
     const [tipoVehiculo, setTipoVehiculo] = useState("auto");
     const [cupo, setCupo] = useState("");
 
-    // Inicializamos en null para evitar el error de hidratación de Next.js
     const [horaActual, setHoraActual] = useState(null);
     const [fechaActual, setFechaActual] = useState(null);
 
     useEffect(() => {
-        // Definimos una función interna para actualizar el estado
         const actualizarReloj = () => {
             const ahora = new Date();
             setHoraActual(ahora.toLocaleTimeString());
             setFechaActual(ahora.toLocaleDateString());
         };
 
-        // La llamamos una vez para que no aparezca vacío al montar
         actualizarReloj();
 
-        // Configuramos el intervalo
         const timer = setInterval(actualizarReloj, 1000);
 
         return () => clearInterval(timer);
-    }, []); // El array vacío asegura que solo se ejecute al montar
+    }, []);
 
     const cuposDisponibles = [
         "A-1", "A-2", "A-5", "A-12", "A-15",
@@ -42,7 +38,7 @@ export function EntradasForm() {
         setCupo("");
     };
 
-    // Mantenemos tu validación original de >= 5 caracteres
+    // validación >= 5 caracteres
     const isFormValid = placa.length >= 5 && cupo !== "";
 
     return (
@@ -150,8 +146,6 @@ export function EntradasForm() {
                     </div>
                 </div>
             </div>
-
-            {/* Footer / Botón */}
             <div className="p-6 bg-slate-900 flex justify-end">
                 <button
                     onClick={handleRegistrarEntrada}

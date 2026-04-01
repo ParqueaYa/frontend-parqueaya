@@ -2,7 +2,6 @@
 export function DashboardTitle() {
     return (
         <div className="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 p-6 mb-1 shadow-sm relative overflow-hidden">
-            {/* Acento lateral de color que usamos en el login y tablas */}
             <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary"></div>
 
             <div className="flex flex-col gap-1">

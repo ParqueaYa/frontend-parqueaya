@@ -1,17 +1,19 @@
-// app/entradas/page.js
+// app/salidas/page.js
 import { Layout } from '@/components/layout/Layout';
-import { Entradas } from '@/components/entradas/Entradas';
+import { Salidas } from '@/components/salidas/Salidas';
 import { LoginHeader } from '@/components/login/LoginHeader';
 import { LoginFooter } from '@/components/login/LoginFooter';
 
-export default function EntradasPage() {
+export default function SalidasPage() {
     return (
         <Layout>
-            <div className="bg-slate-950 font-display text-slate-100 min-h-screen flex flex-col">
+            <div className="min-h-screen bg-slate-950 flex flex-col">
                 <LoginHeader />
+
                 <main className="flex-1">
-                    <Entradas />
+                    <Salidas />
                 </main>
+
                 <LoginFooter />
             </div>
         </Layout>

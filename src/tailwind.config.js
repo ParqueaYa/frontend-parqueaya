@@ -10,7 +10,7 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                "primary": "#0f5b5f", // Azul petróleo
+                "primary": "#0f5b5f",
                 "background-light": "#f8f7f6",
                 "background-dark": "#211811",
             },

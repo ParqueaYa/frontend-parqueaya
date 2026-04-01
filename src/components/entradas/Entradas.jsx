@@ -1,4 +1,4 @@
-// components/entradas/Entradas.jsx (o donde agrupes los componentes)
+// components/entradas/Entradas.jsx
 import { EntradasTitle } from "./EntradasTitle";
 import { EntradasForm } from "./EntradasForm";
 import { EntradasValidation } from "./EntradasValidation";

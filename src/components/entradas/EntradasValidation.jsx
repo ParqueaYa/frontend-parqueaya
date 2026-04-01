@@ -4,7 +4,6 @@ export function EntradasValidation() {
         <div className="mt-6 max-w-[800px] bg-slate-950 border-l-4 border-orange-600/80 shadow-lg overflow-hidden group">
             <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-orange-950/20 to-transparent">
 
-                {/* Icono de Alerta con pulso sutil */}
                 <div className="flex-shrink-0">
                     <span className="material-symbols-outlined text-orange-500 text-2xl animate-pulse">
                         warning
@@ -25,13 +24,11 @@ export function EntradasValidation() {
                     </p>
                 </div>
 
-                {/* Decoración de esquina estilo escáner */}
                 <div className="ml-auto opacity-20 group-hover:opacity-40 transition-opacity">
                     <div className="w-8 h-8 border-t border-r border-orange-500"></div>
                 </div>
             </div>
 
-            {/* Barra de progreso decorativa estática */}
             <div className="h-[1px] w-full bg-slate-800">
                 <div className="h-full w-1/3 bg-orange-600/40"></div>
             </div>

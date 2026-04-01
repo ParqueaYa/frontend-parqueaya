@@ -16,7 +16,7 @@ export const LoginForm = () => {
     onSuccess: async (tokenResponse) => {
       setLoading(true);
       try {
-        // Enviamos el token al endpoint de login de tu Spring Boot
+        // Enviamos el token al endpoint de login de Spring Boot
         const response = await fetch('http://localhost:8080/api/v1/auth/google/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -43,7 +43,7 @@ export const LoginForm = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
-    // Aquí iría tu fetch normal a Spring Boot: /api/v1/auth/login
+    // Aquí iría fetch a Spring Boot: /api/v1/auth/login
     console.log('Login attempt:', { email, password });
     // Simulando éxito
     setTimeout(() => setLoading(false), 1000);
