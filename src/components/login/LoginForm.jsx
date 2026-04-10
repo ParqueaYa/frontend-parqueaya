@@ -4,49 +4,73 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGoogleLogin } from '@react-oauth/google';
+import authService from '@/services/authService';
 
 export const LoginForm = () => {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   // --- LÓGICA DE LOGIN CON GOOGLE ---
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       setLoading(true);
+      setErrorMsg('');
       try {
-        // Enviamos el token al endpoint de login de Spring Boot
-        const response = await fetch('http://localhost:8080/api/v1/auth/google/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token: tokenResponse.access_token }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          // Guardamos el JWT que nos devuelva Spring Boot
-          localStorage.setItem('token', data.jwt);
+        const data = await authService.login({ googleToken: tokenResponse.access_token });
+        console.log('Respuesta del servidor:', data);
+        const token = data.jwt || data.token;
+        if (token) {
+          localStorage.setItem('token', token);
+          localStorage.setItem('username', data.username || 'Usuario Google');
+          localStorage.setItem('userRole', data.role || 'ADMINISTRADOR');
           router.push('/dashboard');
         } else {
-          console.error("Error en la autenticación con el servidor");
+          setErrorMsg('No se recibió token del servidor. Intente nuevamente.');
         }
       } catch (error) {
-        console.error("Error de conexión:", error);
+        console.error('Google login error:', error);
+        const msg = error?.response?.data?.message || 'Error al iniciar sesión con Google.';
+        setErrorMsg(msg);
       } finally {
         setLoading(false);
       }
     },
-    onError: () => console.log('Login fallido con Google'),
+    onError: () => setErrorMsg('Login fallido con Google. Intente nuevamente.'),
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    localStorage.clear();
     setLoading(true);
-    // Aquí iría fetch a Spring Boot: /api/v1/auth/login
-    console.log('Login attempt:', { email, password });
-    // Simulando éxito
-    setTimeout(() => setLoading(false), 1000);
+    setErrorMsg('');
+    try {
+      const data = await authService.login({ email, password });
+      console.log('Respuesta del servidor:', data);
+      const token = data.jwt || data.token;
+      if (!token) {
+        setErrorMsg('Credenciales incorrectas o servidor no disponible.');
+        return;
+      }
+      localStorage.setItem('token', token);
+      localStorage.setItem('username', data.username || email);
+      localStorage.setItem('userRole', data.role || 'ADMINISTRADOR');
+      router.push('/dashboard');
+    } catch (error) {
+      console.error('Login error:', error);
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        setErrorMsg('⚠️ Credenciales incorrectas. Verifique su email y contraseña.');
+      } else if (status === 423) {
+        setErrorMsg('🔒 Cuenta bloqueada por múltiples intentos fallidos.');
+      } else {
+        setErrorMsg('❌ No se pudo conectar al servidor. Verifique que el backend esté activo.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -57,6 +81,12 @@ export const LoginForm = () => {
           </h2>
           <div className="h-1 w-12 bg-primary mt-2"></div>
         </div>
+
+        {errorMsg && (
+          <div className="mb-4 text-xs font-bold px-4 py-3 border bg-red-500/10 border-red-500/30 text-red-400 tracking-wide">
+            {errorMsg}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1">

@@ -2,11 +2,15 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import cupoService from "@/services/cupoService";
+import vehiculoService from "@/services/vehiculoService";
 
 export function EntradasForm() {
     const [placa, setPlaca] = useState("");
     const [tipoVehiculo, setTipoVehiculo] = useState("auto");
     const [cupo, setCupo] = useState("");
+    const [cuposDisponibles, setCuposDisponibles] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     const [horaActual, setHoraActual] = useState(null);
     const [fechaActual, setFechaActual] = useState(null);
@@ -19,27 +23,53 @@ export function EntradasForm() {
         };
 
         actualizarReloj();
-
         const timer = setInterval(actualizarReloj, 1000);
+
+        // Cargar cupos desde el servicio
+        const cargarCupos = async () => {
+            const cupos = await cupoService.obtenerCuposDisponibles();
+            setCuposDisponibles(cupos);
+        };
+        cargarCupos();
 
         return () => clearInterval(timer);
     }, []);
 
-    const cuposDisponibles = [
-        "A-1", "A-2", "A-5", "A-12", "A-15",
-        "B-3", "B-7", "B-10", "B-14",
-        "C-2", "C-6", "C-9",
-        "M-1", "M-2", "M-3", "M-4", "M-5"
-    ];
+    const [mensaje, setMensaje] = useState(null); // { tipo: 'exito'|'error', texto: string }
 
-    const handleRegistrarEntrada = () => {
-        alert(`Entrada registrada:\nPlaca: ${placa}\nTipo: ${tipoVehiculo}\nCupo: ${cupo}\nFecha: ${fechaActual}\nHora: ${horaActual}`);
-        setPlaca("");
-        setCupo("");
+    const handleRegistrarEntrada = async () => {
+        setLoading(true);
+        setMensaje(null);
+        try {
+            await vehiculoService.registrarEntrada({
+                placa,
+                tipoVehiculo,
+                cupo,
+                fechaEntrada: fechaActual,
+                horaEntrada: horaActual
+            });
+            setMensaje({ tipo: 'exito', texto: `✅ Vehículo ${placa} registrado exitosamente.` });
+            setPlaca('');
+            setCupo('');
+            // Recargar cupos disponibles
+            const cupos = await cupoService.obtenerCuposDisponibles();
+            setCuposDisponibles(cupos);
+        } catch (error) {
+            const status = error?.response?.status;
+            let texto = 'Error al registrar. Intente nuevamente.';
+            if (status === 401) texto = '⚠️ Sesión expirada. Por favor inicie sesión nuevamente.';
+            if (status === 403) texto = '🔒 Acceso denegado (403). Su sesión no tiene permisos o el token JWT no es válido.';
+            if (status === 400) texto = `❌ Datos incorrectos: ${error?.response?.data?.message || 'Revise los campos del formulario.'}`;
+            console.error(`[EntradasForm] Error ${status ?? 'desconocido'} al registrar entrada:`, error?.response?.data || error.message);
+            setMensaje({ tipo: 'error', texto });
+        } finally {
+            setLoading(false);
+        }
     };
 
+
     // validación >= 5 caracteres
-    const isFormValid = placa.length >= 5 && cupo !== "";
+    const isFormValid = placa.length >= 5 && cupo !== "" && !loading;
 
     return (
         <div className="max-w-[800px] bg-slate-900 border border-slate-800 shadow-2xl">
@@ -146,20 +176,32 @@ export function EntradasForm() {
                     </div>
                 </div>
             </div>
-            <div className="p-6 bg-slate-900 flex justify-end">
-                <button
-                    onClick={handleRegistrarEntrada}
-                    disabled={!isFormValid}
-                    className={`group relative flex items-center gap-3 py-4 px-8 border text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 ${
-                        isFormValid
-                            ? "bg-primary border-primary text-white hover:bg-transparent hover:text-primary cursor-pointer"
-                            : "bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed opacity-50"
-                    }`}
-                >
-                    <span className="material-symbols-outlined text-lg">save_alt</span>
-                    REGISTRAR ENTRADA
-                </button>
+            <div className="p-6 bg-slate-900 flex flex-col gap-4">
+                {/* Banner de mensaje */}
+                {mensaje && (
+                    <div className={`text-xs font-bold px-4 py-3 border tracking-wide ${
+                        mensaje.tipo === 'exito'
+                            ? 'bg-green-500/10 border-green-500/30 text-green-400'
+                            : 'bg-red-500/10 border-red-500/30 text-red-400'
+                    }`}>
+                        {mensaje.texto}
+                    </div>
+                )}
+                <div className="flex justify-end">
+                    <button
+                        onClick={handleRegistrarEntrada}
+                        disabled={!isFormValid}
+                        className={`group relative flex items-center gap-3 py-4 px-8 border text-xs font-black uppercase tracking-[0.2em] transition-all duration-300 ${
+                            isFormValid
+                                ? "bg-primary border-primary text-white hover:bg-transparent hover:text-primary cursor-pointer"
+                                : "bg-slate-800 border-slate-700 text-slate-600 cursor-not-allowed opacity-50"
+                        }`}
+                    >
+                        <span className="material-symbols-outlined text-lg">save_alt</span>
+                        {loading ? 'REGISTRANDO...' : 'REGISTRAR ENTRADA'}
+                    </button>
+                </div>
             </div>
         </div>
     );
-}
+}

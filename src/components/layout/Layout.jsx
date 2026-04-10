@@ -1,12 +1,31 @@
 // components/layout/Layout.jsx
 'use client';
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 export function Layout({ children }) {
     const pathname = usePathname();
     const router = useRouter();
+
+    const [userData, setUserData] = useState({
+        username: 'Cargando...',
+        role: 'ADMINISTRADOR'
+    });
+
+    useEffect(() => {
+        const storedUsername = localStorage.getItem('username');
+        const storedRole = localStorage.getItem('userRole');
+        if (storedUsername) {
+            setUserData({
+                username: storedUsername,
+                role: storedRole || 'ADMINISTRADOR'
+            });
+        }
+    }, []);
+
+    const avatarLetter = userData.username.charAt(0).toUpperCase();
 
     const menuItems = [
         { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
@@ -89,11 +108,17 @@ export function Layout({ children }) {
 
                     <div className="flex items-center gap-6">
                         <div className="hidden md:flex flex-col items-end">
-                            <span className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">Administrador</span>
-                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100">lcarlosvazap@gmail.com</span>
+                            <span className="text-[10px] font-bold uppercase text-slate-500 tracking-tight">
+                                {userData.role}
+                            </span>
+                            <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                                {userData.username}
+                            </span>
                         </div>
-                        <div className="h-10 w-10 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
-                            <span className="material-symbols-outlined text-slate-400">person</span>
+                        <div className="h-10 w-10 bg-primary/10 dark:bg-slate-800 border border-primary/20 dark:border-slate-700 flex items-center justify-center rounded-full">
+                            <span className="text-primary font-bold text-lg">
+                                {avatarLetter}
+                            </span>
                         </div>
                     </div>
                 </header>
