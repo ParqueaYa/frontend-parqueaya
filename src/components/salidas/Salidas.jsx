@@ -7,11 +7,28 @@ import { SalidasSearch } from './SalidasSearch';
 import { SalidasVehicleInfo } from './SalidasVehicleInfo';
 import { SalidasActions } from './SalidasActions';
 import vehiculoService from "@/services/vehiculoService";
+import configService from "@/services/configService";
+import { useEffect } from "react";
 
 export function Salidas() {
     const [placaBusqueda, setPlacaBusqueda] = useState("");
     const [vehiculoEncontrado, setVehiculoEncontrado] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [tarifaServidor, setTarifaServidor] = useState(5000); // Valor por defecto
+
+    useEffect(() => {
+        const cargarConfig = async () => {
+            try {
+                const config = await configService.getTarifa();
+                if (config && config.tarifa) {
+                    setTarifaServidor(config.tarifa);
+                }
+            } catch (error) {
+                console.error("No se pudo cargar la tarifa del servidor:", error);
+            }
+        };
+        cargarConfig();
+    }, []);
 
     const buscarVehiculo = async () => {
         setLoading(true);
@@ -37,18 +54,23 @@ export function Salidas() {
                     }
                 }
 
-                const tiempoMinutos = Math.floor((horaActual.getTime() - horaEntrada.getTime()) / 60000);
-                const horas_total = Math.floor(tiempoMinutos / 60);
-                const minutos_total = tiempoMinutos % 60;
+                const diffMs = Math.max(0, horaActual.getTime() - horaEntrada.getTime());
+                const totalHoras = diffMs / (1000 * 60 * 60);
+                
+                // Mínimo 1 hora, cobro por fracción (Math.ceil)
+                const horasACobrar = Math.max(1, Math.ceil(totalHoras));
+                
+                const tiempoMinutosTotal = Math.floor(diffMs / 60000);
+                const horas_total = Math.floor(tiempoMinutosTotal / 60);
+                const minutos_total = tiempoMinutosTotal % 60;
 
-                const tarifaPorHora = vehiculo.tipo === "Moto" ? 2000 : (vehiculo.tipo === "Auto" || vehiculo.tipo === "Camioneta") ? 3000 : 4000;
-                const monto = Math.ceil(tiempoMinutos / 60) * tarifaPorHora;
+                const monto = horasACobrar * tarifaServidor;
 
                 setVehiculoEncontrado({
                     ...vehiculo,
                     horaSalida: horaActual.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
                     tiempoTotal: `${horas_total}h ${minutos_total}m`,
-                    tarifaAplicada: `$${tarifaPorHora.toLocaleString()}/hora`,
+                    tarifaAplicada: `$${tarifaServidor.toLocaleString()}/hora`,
                     montoPagar: `$${monto.toLocaleString()}`
                 });
             } else {

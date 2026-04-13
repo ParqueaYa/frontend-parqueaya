@@ -16,6 +16,7 @@ export const LoginForm = () => {
   // --- LÓGICA DE LOGIN CON GOOGLE ---
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
+      localStorage.clear(); // Limpiar estado previo
       setLoading(true);
       setErrorMsg('');
       try {

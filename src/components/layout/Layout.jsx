@@ -14,16 +14,45 @@ export function Layout({ children }) {
         role: 'ADMINISTRADOR'
     });
 
-    useEffect(() => {
-        const storedUsername = localStorage.getItem('username');
-        const storedRole = localStorage.getItem('userRole');
-        if (storedUsername) {
-            setUserData({
-                username: storedUsername,
-                role: storedRole || 'ADMINISTRADOR'
-            });
+    const parseJwt = (token) => {
+        try {
+            const base64Url = token.split('.')[1];
+            const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        } catch (e) {
+            return null;
         }
-    }, []);
+    };
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const storedRole = localStorage.getItem('userRole') || 'ADMINISTRADOR';
+        
+        if (token) {
+            const decoded = parseJwt(token);
+            if (decoded && decoded.sub) {
+                const email = decoded.sub;
+                const name = email.split('@')[0];
+                setUserData({
+                    username: name,
+                    email: email,
+                    role: storedRole
+                });
+            } else {
+                const storedUsername = localStorage.getItem('username');
+                setUserData({
+                    username: storedUsername || 'Usuario',
+                    email: storedUsername || 'Oculto',
+                    role: storedRole
+                });
+            }
+        } else {
+            router.push('/');
+        }
+    }, [pathname, router]);
 
     const avatarLetter = userData.username.charAt(0).toUpperCase();
 
@@ -42,6 +71,7 @@ export function Layout({ children }) {
     ];
 
     const handleLogout = () => {
+        localStorage.clear();
         router.push('/');
     };
 
@@ -114,6 +144,11 @@ export function Layout({ children }) {
                             <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
                                 {userData.username}
                             </span>
+                            {userData.email && (
+                            <span className="text-[10px] text-slate-400">
+                                {userData.email}
+                            </span>
+                            )}
                         </div>
                         <div className="h-10 w-10 bg-primary/10 dark:bg-slate-800 border border-primary/20 dark:border-slate-700 flex items-center justify-center rounded-full">
                             <span className="text-primary font-bold text-lg">

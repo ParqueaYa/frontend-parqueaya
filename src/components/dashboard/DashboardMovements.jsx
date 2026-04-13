@@ -2,9 +2,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import axiosInstance from '@/api/axiosConfig';
 
 export function DashboardMovements() {
+    const pathname = usePathname();
     const [searchTerm, setSearchTerm]     = useState('');
     const [filterStatus, setFilterStatus] = useState('Todos');
     const [movimientos, setMovimientos]   = useState([]);
@@ -23,7 +25,7 @@ export function DashboardMovements() {
             }
         };
         fetchMovimientos();
-    }, []);
+    }, [pathname]);
 
     // Normaliza el campo estado para comparación insensible a mayúsculas/tildes
     const filteredMovements = movimientos.filter((mov) => {

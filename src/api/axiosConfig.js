@@ -15,6 +15,10 @@ axiosInstance.interceptors.request.use(
         const token = localStorage.getItem('token');
         console.log("Cargando token para petición:", localStorage.getItem('token'));
 
+        if (config.url && config.url.includes('/stats')) {
+            console.log("Token a punto de enviarse para la petición de STATS:", localStorage.getItem('token'));
+        }
+
         const isAuthRoute =
             config.url.includes('/auth/register') ||
             config.url.includes('/auth/login');

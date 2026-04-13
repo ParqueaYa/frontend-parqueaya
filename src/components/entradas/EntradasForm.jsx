@@ -15,6 +15,15 @@ export function EntradasForm() {
     const [horaActual, setHoraActual] = useState(null);
     const [fechaActual, setFechaActual] = useState(null);
 
+    const cargarCupos = async () => {
+        try {
+            const cupos = await cupoService.obtenerCuposDisponibles();
+            setCuposDisponibles(cupos);
+        } catch (error) {
+            console.error("[EntradasForm] Error al cargar cupos iniciales:", error);
+        }
+    };
+
     useEffect(() => {
         const actualizarReloj = () => {
             const ahora = new Date();
@@ -25,11 +34,7 @@ export function EntradasForm() {
         actualizarReloj();
         const timer = setInterval(actualizarReloj, 1000);
 
-        // Cargar cupos desde el servicio
-        const cargarCupos = async () => {
-            const cupos = await cupoService.obtenerCuposDisponibles();
-            setCuposDisponibles(cupos);
-        };
+        // Cargar cupos desde el servicio cada vez que se monta el componente
         cargarCupos();
 
         return () => clearInterval(timer);
@@ -51,9 +56,8 @@ export function EntradasForm() {
             setMensaje({ tipo: 'exito', texto: `✅ Vehículo ${placa} registrado exitosamente.` });
             setPlaca('');
             setCupo('');
-            // Recargar cupos disponibles
-            const cupos = await cupoService.obtenerCuposDisponibles();
-            setCuposDisponibles(cupos);
+            // Refresco: Recargar cupos disponibles para que el recién usado ya no aparezca
+            await cargarCupos();
         } catch (error) {
             const status = error?.response?.status;
             let texto = 'Error al registrar. Intente nuevamente.';
