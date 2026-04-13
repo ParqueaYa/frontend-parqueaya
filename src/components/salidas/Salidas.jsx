@@ -6,52 +6,105 @@ import { SalidasTitle } from './SalidasTitle';
 import { SalidasSearch } from './SalidasSearch';
 import { SalidasVehicleInfo } from './SalidasVehicleInfo';
 import { SalidasActions } from './SalidasActions';
+import vehiculoService from "@/services/vehiculoService";
+import configService from "@/services/configService";
+import { useEffect } from "react";
 
 export function Salidas() {
     const [placaBusqueda, setPlacaBusqueda] = useState("");
     const [vehiculoEncontrado, setVehiculoEncontrado] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [tarifaServidor, setTarifaServidor] = useState(5000); // Valor por defecto
 
-    // Datos quemados para pruebas
-    const vehiculosDentro = [
-        { placa: "XYZ789", tipo: "Moto", cupo: "M-5", horaEntrada: "09:15" },
-        { placa: "QRS321", tipo: "Camioneta", cupo: "C-3", horaEntrada: "10:20" },
-        { placa: "TUV654", tipo: "Auto", cupo: "A-8", horaEntrada: "11:30" },
-    ];
+    useEffect(() => {
+        const cargarConfig = async () => {
+            try {
+                const config = await configService.getTarifa();
+                if (config && config.tarifa) {
+                    setTarifaServidor(config.tarifa);
+                }
+            } catch (error) {
+                console.error("No se pudo cargar la tarifa del servidor:", error);
+            }
+        };
+        cargarConfig();
+    }, []);
 
-    const buscarVehiculo = () => {
+    const buscarVehiculo = async () => {
+        setLoading(true);
         const busqueda = placaBusqueda.trim().toUpperCase();
-        const vehiculo = vehiculosDentro.find(v => v.placa === busqueda);
+        try {
+            const vehiculo = await vehiculoService.buscarVehiculoPorPlaca(busqueda);
 
-        if (vehiculo) {
-            const horaActual = new Date();
-            const [horas, minutos] = vehiculo.horaEntrada.split(":");
-            const horaEntrada = new Date();
-            horaEntrada.setHours(parseInt(horas), parseInt(minutos), 0);
+            if (vehiculo) {
+                const horaActual = new Date();
+                let horaEntrada = new Date();
 
-            const tiempoMinutos = Math.floor((horaActual.getTime() - horaEntrada.getTime()) / 60000);
-            const horas_total = Math.floor(tiempoMinutos / 60);
-            const minutos_total = tiempoMinutos % 60;
+                if (vehiculo.horaEntrada) {
+                    if (typeof vehiculo.horaEntrada === 'string' && vehiculo.horaEntrada.includes('T')) {
+                        horaEntrada = new Date(vehiculo.horaEntrada);
+                    } else if (typeof vehiculo.horaEntrada === 'string' && vehiculo.horaEntrada.includes(':')) {
+                        const [horas, minutos] = vehiculo.horaEntrada.split(":");
+                        horaEntrada.setHours(parseInt(horas, 10), parseInt(minutos, 10), 0);
+                    } else {
+                        const parsedDate = new Date(vehiculo.horaEntrada);
+                        if (!isNaN(parsedDate.getTime())) {
+                            horaEntrada = parsedDate;
+                        }
+                    }
+                }
 
-            const tarifaPorHora = vehiculo.tipo === "Moto" ? 2000 : vehiculo.tipo === "Auto" ? 3000 : 4000;
-            const monto = Math.ceil(tiempoMinutos / 60) * tarifaPorHora;
+                const diffMs = Math.max(0, horaActual.getTime() - horaEntrada.getTime());
+                const totalHoras = diffMs / (1000 * 60 * 60);
+                
+                // Mínimo 1 hora, cobro por fracción (Math.ceil)
+                const horasACobrar = Math.max(1, Math.ceil(totalHoras));
+                
+                const tiempoMinutosTotal = Math.floor(diffMs / 60000);
+                const horas_total = Math.floor(tiempoMinutosTotal / 60);
+                const minutos_total = tiempoMinutosTotal % 60;
 
-            setVehiculoEncontrado({
-                ...vehiculo,
-                horaSalida: horaActual.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-                tiempoTotal: `${horas_total}h ${minutos_total}m`,
-                tarifaAplicada: `$${tarifaPorHora.toLocaleString()}/hora`,
-                montoPagar: `$${monto.toLocaleString()}`
-            });
-        } else {
-            alert("Vehículo no encontrado. Verifique la placa.");
+                const monto = horasACobrar * tarifaServidor;
+
+                setVehiculoEncontrado({
+                    ...vehiculo,
+                    horaSalida: horaActual.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                    tiempoTotal: `${horas_total}h ${minutos_total}m`,
+                    tarifaAplicada: `$${tarifaServidor.toLocaleString()}/hora`,
+                    montoPagar: `$${monto.toLocaleString()}`
+                });
+            } else {
+                alert("Vehículo no encontrado en el servidor.");
+                setVehiculoEncontrado(null);
+            }
+        } catch (error) {
+            console.error("Error al buscar:", error);
+            const status = error.response?.status;
+            if (status === 404) {
+                alert("El vehículo no se encuentra registrado o ya salió.");
+            } else if (status === 403) {
+                alert("No tiene permisos o su sesión expiró (403).");
+            } else {
+                alert(error.response?.data?.message || "Error al comunicarse con el servidor.");
+            }
             setVehiculoEncontrado(null);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const finalizarSalida = () => {
-        alert("Salida finalizada. Cupo liberado y pago registrado.");
-        setPlacaBusqueda("");
-        setVehiculoEncontrado(null);
+    const finalizarSalida = async () => {
+        try {
+            if (vehiculoEncontrado?.id) {
+                await vehiculoService.registrarSalida(vehiculoEncontrado.id);
+                alert("Salida finalizada en el servidor. Cupo liberado.");
+                setPlacaBusqueda("");
+                setVehiculoEncontrado(null);
+            }
+        } catch (error) {
+            console.error("Error al finalizar salida:", error);
+            alert(error.response?.data?.message || "Error al finalizar salida en el servidor.");
+        }
     };
 
     return (

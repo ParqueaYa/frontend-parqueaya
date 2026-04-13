@@ -1,3 +1,5 @@
+"use client";
+
 // components/dashboard/Dashboard.jsx
 import { DashboardTitle } from './DashboardTitle';
 import { DashboardStats } from './DashboardStats';

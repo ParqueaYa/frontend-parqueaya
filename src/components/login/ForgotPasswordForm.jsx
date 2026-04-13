@@ -2,15 +2,44 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import authService from '@/services/authService';
 
 export const ForgotPasswordForm = () => {
     const [email, setEmail] = useState('');
     const [isSubmitted, setIsSubmitted] = useState(false);
 
-    const handleSubmit = (e) => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log('Solicitud de recuperación para:', email);
-        setIsSubmitted(true);
+        setLoading(true);
+        setError(null);
+        console.log('--- INICIANDO SOLICITUD DE RECUPERACIÓN ---');
+        console.log('Correo destino:', email);
+
+        try {
+            const data = await authService.forgotPassword(email);
+            console.log('Respuesta del servidor:', data);
+            setIsSubmitted(true);
+        } catch (err) {
+            const status = err.response?.status;
+            const message = err.response?.data?.message || 'Error desconocido';
+            
+            console.error('--- ERROR EN RECUPERACIÓN ---');
+            console.error(`Status Code: ${status}`);
+            console.error(`Mensaje: ${message}`);
+            
+            if (status === 403) {
+                setError('🔒 Error 403: El servidor rechazó la petición (CORS o SecurityConfig).');
+            } else if (status === 404) {
+                setError('🔍 Error 404: Endpoint no encontrado. Verifique la URL.');
+            } else {
+                setError(`❌ Error ${status || 'de red'}: ${message}`);
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -24,6 +53,12 @@ export const ForgotPasswordForm = () => {
                     Ingresa tu correo para recibir instrucciones de restablecimiento.
                 </p>
             </div>
+
+            {error && (
+                <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 text-red-500 text-[10px] font-bold uppercase tracking-wider">
+                    {error}
+                </div>
+            )}
 
             {!isSubmitted ? (
                 <form onSubmit={handleSubmit} className="space-y-5">
@@ -44,10 +79,11 @@ export const ForgotPasswordForm = () => {
 
                     <div className="pt-2">
                         <button
-                            className="w-full bg-primary hover:bg-[#0a4548] text-white font-bold py-3 text-sm uppercase tracking-wider transition-colors"
+                            className={`w-full bg-primary hover:bg-[#0a4548] text-white font-bold py-3 text-sm uppercase tracking-wider transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             type="submit"
+                            disabled={loading}
                         >
-                            Enviar Instrucciones
+                            {loading ? 'Enviando...' : 'Enviar Instrucciones'}
                         </button>
                     </div>
                 </form>

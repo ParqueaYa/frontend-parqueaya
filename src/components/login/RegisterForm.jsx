@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGoogleLogin } from '@react-oauth/google';
+import authService from '@/services/authService';
 
 const EyeIcon = ({ visible }) => (
     visible ? (
@@ -40,19 +41,15 @@ export const RegisterForm = () => {
         onSuccess: async (tokenResponse) => {
             setLoading(true);
             try {
-                const response = await fetch('http://localhost:8080/api/v1/auth/google', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: tokenResponse.access_token }),
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
+                const data = await authService.register({ googleToken: tokenResponse.access_token });
+                if (data.jwt) {
                     localStorage.setItem('token', data.jwt);
                     router.push('/dashboard');
                 }
             } catch (error) {
                 console.error("Error conectando con Spring Boot", error);
+                alert("Error de conexión. Se usará el flujo de demostración.");
+                router.push('/dashboard');
             } finally {
                 setLoading(false);
             }
@@ -64,8 +61,23 @@ export const RegisterForm = () => {
         e.preventDefault();
         if (isButtonDisabled) return;
 
-        console.log('Enviando a Spring Boot:', formData);
-        router.push('/');
+        setLoading(true);
+        try {
+            const userData = {
+                username: formData.email,
+                password: formData.password,
+                nombre: formData.nombre
+            };
+            await authService.register(userData);
+            alert("Cuenta creada exitosamente. Inicie sesión.");
+            router.push('/');
+        } catch (error) {
+            console.error('Error al registrar:', error);
+            alert("Servidor no disponible. Registro simulado para propósitos de prueba.");
+            router.push('/');
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
