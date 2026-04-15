@@ -1,46 +1,41 @@
 import axiosInstance from '../api/axiosConfig';
 
 const authService = {
-    login: async (credentials) => {
-        try {
-            const response = await axiosInstance.post('/auth/login', credentials);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    login: async ({ email, password }) => {
+        const response = await axiosInstance.post('/api/auth/login', { email, password });
+        return response.data;
     },
 
     register: async (userData) => {
-        try {
-            const response = await axiosInstance.post('/auth/register', userData);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+        const response = await axiosInstance.post('/api/auth/registro', userData);
+        return response.data;
     },
 
-    logout: async () => {
-        // Lógica de logout (limpiar tokens, etc.)
+    loginGoogle: async (idToken) => {
+        const response = await axiosInstance.post('/api/auth/google', { idToken });
+        return response.data;
+    },
+
+    logout: () => {
         localStorage.removeItem('token');
+        localStorage.removeItem('nombreCompleto');
+        localStorage.removeItem('rol');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('email');
     },
 
-    forgotPassword: async (email) => {
-        try {
-            const response = await axiosInstance.post('/auth/forgot-password', { email });
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
+    getPerfil: async (email) => {
+        const response = await axiosInstance.get('/api/auth/perfil', { params: { email } });
+        return response.data;
     },
 
-    resetPassword: async (token, newPassword) => {
-        try {
-            const response = await axiosInstance.post('/auth/reset-password', { token, newPassword });
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    }
+    guardarSesion: (data) => {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('nombreCompleto', data.nombreCompleto);
+        localStorage.setItem('rol', data.rol);
+        localStorage.setItem('userId', data.id);
+        localStorage.setItem('email', data.email);
+    },
 };
 
 export default authService;

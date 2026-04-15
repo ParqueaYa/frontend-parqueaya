@@ -1,15 +1,32 @@
 import axiosInstance from '../api/axiosConfig';
 
 const configService = {
-    getTarifa: async () => {
-        try {
-            const response = await axiosInstance.get('/api/config/tarifa');
-            return response.data; // { tarifa: 5000 }
-        } catch (error) {
-            console.error("Error al obtener tarifa:", error);
-            throw error;
-        }
-    }
+    // Devuelve { tarifa: number } con el monto de la primera tarifa HORA activa encontrada.
+    // Si no hay ninguna configurada devuelve { tarifa: 0 }.
+    getTarifaHora: async (tipoVehiculoNombre = null) => {
+        const response = await axiosInstance.get('/api/tarifas/activas');
+        const tarifas = response.data;
+
+        const tarifa = tarifas.find((t) => {
+            const esHora = t.tipoTarifa === 'HORA';
+            if (tipoVehiculoNombre) {
+                return esHora && t.tipoVehiculo?.nombre?.toLowerCase() === tipoVehiculoNombre.toLowerCase();
+            }
+            return esHora;
+        });
+
+        return { tarifa: tarifa?.monto ?? 0 };
+    },
+
+    listarTarifas: async () => {
+        const response = await axiosInstance.get('/api/tarifas');
+        return response.data;
+    },
+
+    listarTarifasActivas: async () => {
+        const response = await axiosInstance.get('/api/tarifas/activas');
+        return response.data;
+    },
 };
 
 export default configService;

@@ -1,39 +1,61 @@
 import axiosInstance from '../api/axiosConfig';
 
 const vehiculoService = {
-    registrarEntrada: async (vehiculoData) => {
-        // vehiculoData: { placa, tipoVehiculo, cupo }
-        try {
-            const response = await axiosInstance.post('/api/vehiculos/entrada', vehiculoData);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    buscarVehiculoPorPlaca: async (placa) => {
-        try {
-            const response = await axiosInstance.get(`/api/vehiculos/placa/${placa}`);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    registrarSalida: async (id) => {
-        try {
-            const response = await axiosInstance.post(`/api/vehiculos/salida/${id}`);
-            return response.data;
-        } catch (error) {
-            throw error;
-        }
-    },
-
-    obtenerMovimientos: async () => {
-        const response = await axiosInstance.get('/api/movimientos');
+    // Operaciones de parqueo
+    registrarEntrada: async ({ placa, observaciones }) => {
+        const response = await axiosInstance.post('/api/parqueo/ingreso', { placa, observaciones });
         return response.data;
-    }
+    },
 
+    consultarPorPlaca: async (placa) => {
+        const response = await axiosInstance.get(`/api/parqueo/consulta/placa/${placa}`);
+        return response.data; // ConsultaCostoResponseDTO
+    },
+
+    registrarSalida: async (placa) => {
+        const response = await axiosInstance.post(`/api/parqueo/salida/${placa}`);
+        return response.data;
+    },
+
+    listarActivos: async () => {
+        const response = await axiosInstance.get('/api/parqueo/activos');
+        return response.data;
+    },
+
+    listarHistorial: async () => {
+        const response = await axiosInstance.get('/api/parqueo');
+        return response.data;
+    },
+
+    // CRUD administrativo de vehículos
+    listarTodos: async () => {
+        const response = await axiosInstance.get('/api/vehiculos');
+        return response.data;
+    },
+
+    obtenerPorPlaca: async (placa) => {
+        const response = await axiosInstance.get(`/api/vehiculos/placa/${placa}`);
+        return response.data;
+    },
+
+    obtenerPorId: async (id) => {
+        const response = await axiosInstance.get(`/api/vehiculos/${id}`);
+        return response.data;
+    },
+
+    crear: async (dto) => {
+        const response = await axiosInstance.post('/api/vehiculos', dto);
+        return response.data;
+    },
+
+    actualizar: async (id, dto) => {
+        const response = await axiosInstance.put(`/api/vehiculos/${id}`, dto);
+        return response.data;
+    },
+
+    eliminar: async (id) => {
+        await axiosInstance.delete(`/api/vehiculos/${id}`);
+    },
 };
 
 export default vehiculoService;
