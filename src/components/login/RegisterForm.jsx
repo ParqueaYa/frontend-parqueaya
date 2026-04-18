@@ -37,44 +37,47 @@ export const RegisterForm = () => {
     const isFormComplete = Object.values(formData).every(value => value.trim() !== '');
     const isButtonDisabled = !isFormComplete || !passwordsMatch || loading;
 
+    const [errorMsg, setErrorMsg] = useState('');
+
     const handleGoogleRegister = useGoogleLogin({
         onSuccess: async (tokenResponse) => {
             setLoading(true);
+            setErrorMsg('');
             try {
-                const data = await authService.register({ googleToken: tokenResponse.access_token });
-                if (data.jwt) {
-                    localStorage.setItem('token', data.jwt);
-                    router.push('/dashboard');
-                }
-            } catch (error) {
-                console.error("Error conectando con Spring Boot", error);
-                alert("Error de conexión. Se usará el flujo de demostración.");
+                const data = await authService.loginGoogle(tokenResponse.access_token);
+                authService.guardarSesion(data);
                 router.push('/dashboard');
+            } catch (error) {
+                setErrorMsg(error?.response?.data?.message || 'Error al registrarse con Google.');
             } finally {
                 setLoading(false);
             }
         },
-        onError: () => console.log('Login con Google falló'),
+        onError: () => setErrorMsg('Login con Google falló. Intente nuevamente.'),
     });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isButtonDisabled) return;
-
         setLoading(true);
+        setErrorMsg('');
         try {
-            const userData = {
-                username: formData.email,
+            const data = await authService.register({
+                nombreCompleto: formData.nombre,
+                email: formData.email,
                 password: formData.password,
-                nombre: formData.nombre
-            };
-            await authService.register(userData);
-            alert("Cuenta creada exitosamente. Inicie sesión.");
-            router.push('/');
+            });
+            authService.guardarSesion(data);
+            router.push('/dashboard');
         } catch (error) {
-            console.error('Error al registrar:', error);
-            alert("Servidor no disponible. Registro simulado para propósitos de prueba.");
-            router.push('/');
+            const status = error?.response?.status;
+            if (status === 409) {
+                setErrorMsg('Ya existe una cuenta con ese correo electrónico.');
+            } else if (status === 400) {
+                setErrorMsg(error?.response?.data?.message || 'Datos inválidos. Revise el formulario.');
+            } else {
+                setErrorMsg('No se pudo conectar al servidor. Intente más tarde.');
+            }
         } finally {
             setLoading(false);
         }
@@ -88,6 +91,12 @@ export const RegisterForm = () => {
                 </h2>
                 <div className="h-1 w-12 bg-primary mt-2"></div>
             </div>
+
+            {errorMsg && (
+                <div className="mb-4 text-xs font-bold px-4 py-3 border bg-red-500/10 border-red-500/30 text-red-400 tracking-wide">
+                    {errorMsg}
+                </div>
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1">

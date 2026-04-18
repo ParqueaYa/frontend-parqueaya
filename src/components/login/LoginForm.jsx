@@ -13,28 +13,17 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
-  // --- LÓGICA DE LOGIN CON GOOGLE ---
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
-      localStorage.clear(); // Limpiar estado previo
+      authService.logout();
       setLoading(true);
       setErrorMsg('');
       try {
-        const data = await authService.login({ googleToken: tokenResponse.access_token });
-        console.log('Respuesta del servidor:', data);
-        const token = data.jwt || data.token;
-        if (token) {
-          localStorage.setItem('token', token);
-          localStorage.setItem('username', data.username || 'Usuario Google');
-          localStorage.setItem('userRole', data.role || 'ADMINISTRADOR');
-          router.push('/dashboard');
-        } else {
-          setErrorMsg('No se recibió token del servidor. Intente nuevamente.');
-        }
+        const data = await authService.loginGoogle(tokenResponse.access_token);
+        authService.guardarSesion(data);
+        router.push('/dashboard');
       } catch (error) {
-        console.error('Google login error:', error);
-        const msg = error?.response?.data?.message || 'Error al iniciar sesión con Google.';
-        setErrorMsg(msg);
+        setErrorMsg(error?.response?.data?.message || 'Error al iniciar sesión con Google.');
       } finally {
         setLoading(false);
       }
@@ -44,30 +33,21 @@ export const LoginForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    localStorage.clear();
+    authService.logout();
     setLoading(true);
     setErrorMsg('');
     try {
       const data = await authService.login({ email, password });
-      console.log('Respuesta del servidor:', data);
-      const token = data.jwt || data.token;
-      if (!token) {
-        setErrorMsg('Credenciales incorrectas o servidor no disponible.');
-        return;
-      }
-      localStorage.setItem('token', token);
-      localStorage.setItem('username', data.username || email);
-      localStorage.setItem('userRole', data.role || 'ADMINISTRADOR');
+      authService.guardarSesion(data);
       router.push('/dashboard');
     } catch (error) {
-      console.error('Login error:', error);
       const status = error?.response?.status;
       if (status === 401 || status === 403) {
-        setErrorMsg('⚠️ Credenciales incorrectas. Verifique su email y contraseña.');
-      } else if (status === 423) {
-        setErrorMsg('🔒 Cuenta bloqueada por múltiples intentos fallidos.');
+        setErrorMsg('Credenciales incorrectas. Verifique su email y contraseña.');
+      } else if (status === 400) {
+        setErrorMsg(error?.response?.data?.message || 'Datos inválidos.');
       } else {
-        setErrorMsg('❌ No se pudo conectar al servidor. Verifique que el backend esté activo.');
+        setErrorMsg('No se pudo conectar al servidor. Verifique que el backend esté activo.');
       }
     } finally {
       setLoading(false);

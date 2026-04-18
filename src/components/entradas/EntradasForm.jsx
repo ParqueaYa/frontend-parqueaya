@@ -1,83 +1,53 @@
-// components/entradas/EntradasForm.jsx
 'use client';
 
 import { useState, useEffect } from "react";
-import cupoService from "@/services/cupoService";
 import vehiculoService from "@/services/vehiculoService";
 
 export function EntradasForm() {
-    const [placa, setPlaca] = useState("");
-    const [tipoVehiculo, setTipoVehiculo] = useState("auto");
-    const [cupo, setCupo] = useState("");
-    const [cuposDisponibles, setCuposDisponibles] = useState([]);
-    const [loading, setLoading] = useState(false);
-
-    const [horaActual, setHoraActual] = useState(null);
-    const [fechaActual, setFechaActual] = useState(null);
-
-    const cargarCupos = async () => {
-        try {
-            const cupos = await cupoService.obtenerCuposDisponibles();
-            setCuposDisponibles(cupos);
-        } catch (error) {
-            console.error("[EntradasForm] Error al cargar cupos iniciales:", error);
-        }
-    };
+    const [placa, setPlaca]               = useState("");
+    const [observaciones, setObservaciones] = useState("");
+    const [loading, setLoading]           = useState(false);
+    const [mensaje, setMensaje]           = useState(null);
+    const [horaActual, setHoraActual]     = useState(null);
+    const [fechaActual, setFechaActual]   = useState(null);
 
     useEffect(() => {
         const actualizarReloj = () => {
             const ahora = new Date();
-            setHoraActual(ahora.toLocaleTimeString());
-            setFechaActual(ahora.toLocaleDateString());
+            setHoraActual(ahora.toLocaleTimeString('es-CO'));
+            setFechaActual(ahora.toLocaleDateString('es-CO'));
         };
-
         actualizarReloj();
         const timer = setInterval(actualizarReloj, 1000);
-
-        // Cargar cupos desde el servicio cada vez que se monta el componente
-        cargarCupos();
-
         return () => clearInterval(timer);
     }, []);
-
-    const [mensaje, setMensaje] = useState(null); // { tipo: 'exito'|'error', texto: string }
 
     const handleRegistrarEntrada = async () => {
         setLoading(true);
         setMensaje(null);
         try {
-            await vehiculoService.registrarEntrada({
-                placa,
-                tipoVehiculo,
-                cupo,
-                fechaEntrada: fechaActual,
-                horaEntrada: horaActual
-            });
-            setMensaje({ tipo: 'exito', texto: `✅ Vehículo ${placa} registrado exitosamente.` });
+            await vehiculoService.registrarEntrada({ placa, observaciones: observaciones || undefined });
+            setMensaje({ tipo: 'exito', texto: `Vehículo ${placa} registrado exitosamente.` });
             setPlaca('');
-            setCupo('');
-            // Refresco: Recargar cupos disponibles para que el recién usado ya no aparezca
-            await cargarCupos();
+            setObservaciones('');
         } catch (error) {
             const status = error?.response?.status;
+            const serverMsg = error?.response?.data?.message;
             let texto = 'Error al registrar. Intente nuevamente.';
-            if (status === 401) texto = '⚠️ Sesión expirada. Por favor inicie sesión nuevamente.';
-            if (status === 403) texto = '🔒 Acceso denegado (403). Su sesión no tiene permisos o el token JWT no es válido.';
-            if (status === 400) texto = `❌ Datos incorrectos: ${error?.response?.data?.message || 'Revise los campos del formulario.'}`;
-            console.error(`[EntradasForm] Error ${status ?? 'desconocido'} al registrar entrada:`, error?.response?.data || error.message);
+            if (status === 404) texto = `El vehículo con placa ${placa} no está registrado en el sistema. Regístrelo primero en el módulo de Vehículos.`;
+            if (status === 409) texto = `El vehículo ${placa} ya se encuentra dentro del parqueadero.`;
+            if (status === 400) texto = serverMsg || 'Datos incorrectos. Revise la placa ingresada.';
+            if (status === 401 || status === 403) texto = 'Sesión expirada o sin permisos. Inicie sesión nuevamente.';
             setMensaje({ tipo: 'error', texto });
         } finally {
             setLoading(false);
         }
     };
 
-
-    // validación >= 5 caracteres
-    const isFormValid = placa.length >= 5 && cupo !== "" && !loading;
+    const isFormValid = placa.trim().length >= 5 && !loading;
 
     return (
         <div className="max-w-[800px] bg-slate-900 border border-slate-800 shadow-2xl">
-            {/* Header del Formulario */}
             <div className="p-4 bg-slate-800/50 border-b border-slate-800 flex items-center gap-3">
                 <div className="h-4 w-1 bg-primary"></div>
                 <h3 className="text-xs font-bold uppercase tracking-widest text-slate-100">
@@ -98,51 +68,28 @@ export function EntradasForm() {
                             type="text"
                             value={placa}
                             onChange={(e) => setPlaca(e.target.value.toUpperCase())}
-                            placeholder="ABC-123"
+                            placeholder="ABC123"
+                            maxLength={10}
                             className="w-full bg-slate-950 border border-slate-700 p-3 text-sm text-white font-bold tracking-widest placeholder:text-slate-700 focus:border-primary focus:outline-none transition-all uppercase"
                         />
                     </div>
                 </div>
 
-                {/* Fila: TIPO VEHÍCULO */}
+                {/* Fila: OBSERVACIONES */}
                 <div className="flex border-b border-slate-800 group">
-                    <div className="w-48 bg-slate-800/30 p-4 flex items-center border-r border-slate-800">
+                    <div className="w-48 bg-slate-800/30 p-4 flex items-start border-r border-slate-800 pt-5">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-primary transition-colors">
-                            TIPO VEHÍCULO:
+                            OBSERVACIONES:
                         </label>
                     </div>
                     <div className="flex-1 p-2 bg-slate-900">
-                        <select
-                            value={tipoVehiculo}
-                            onChange={(e) => setTipoVehiculo(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-700 p-3 text-sm text-white font-bold uppercase tracking-wider focus:border-primary focus:outline-none cursor-pointer appearance-none"
-                        >
-                            <option value="auto">Auto</option>
-                            <option value="moto">Moto</option>
-                            <option value="camioneta">Camioneta</option>
-                            <option value="camion">Camión</option>
-                        </select>
-                    </div>
-                </div>
-
-                {/* Fila: SELECCIONAR CUPO */}
-                <div className="flex border-b border-slate-800 group">
-                    <div className="w-48 bg-slate-800/30 p-4 flex items-center border-r border-slate-800">
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-primary transition-colors">
-                            SELECCIONAR CUPO:
-                        </label>
-                    </div>
-                    <div className="flex-1 p-2 bg-slate-900">
-                        <select
-                            value={cupo}
-                            onChange={(e) => setCupo(e.target.value)}
-                            className="w-full bg-slate-950 border border-slate-700 p-3 text-sm text-white font-bold uppercase tracking-wider focus:border-primary focus:outline-none cursor-pointer"
-                        >
-                            <option value="">-- SELECCIONAR CUPO DISPONIBLE --</option>
-                            {cuposDisponibles.map((c) => (
-                                <option key={c} value={c}>{c}</option>
-                            ))}
-                        </select>
+                        <textarea
+                            value={observaciones}
+                            onChange={(e) => setObservaciones(e.target.value)}
+                            placeholder="Opcional — ej: rayón en puerta derecha"
+                            rows={2}
+                            className="w-full bg-slate-950 border border-slate-700 p-3 text-sm text-white placeholder:text-slate-700 focus:border-primary focus:outline-none transition-all resize-none"
+                        />
                     </div>
                 </div>
 
@@ -180,8 +127,8 @@ export function EntradasForm() {
                     </div>
                 </div>
             </div>
+
             <div className="p-6 bg-slate-900 flex flex-col gap-4">
-                {/* Banner de mensaje */}
                 {mensaje && (
                     <div className={`text-xs font-bold px-4 py-3 border tracking-wide ${
                         mensaje.tipo === 'exito'

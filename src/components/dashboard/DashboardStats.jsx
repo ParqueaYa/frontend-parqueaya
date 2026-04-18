@@ -21,10 +21,10 @@ export function DashboardStats() {
             console.log("Datos recibidos en Dashboard:", data);
             
             setStats({
-                vehiculosHoy:        data.totalVehiculosHoy ?? data.vehiculosHoy ?? 0,
-                ingresosTotal:       data.ingresosHoy ?? data.ingresosTotal ?? 0,
-                disponibles:         data.cuposDisponibles ?? data.disponibles ?? 0,
-                tiempoPromedio:      data.tiempoPromedio ?? 0,
+                vehiculosHoy:   data.vehiculosHoy ?? 0,
+                ingresosTotal:  data.ingresosHoy ?? 0,
+                disponibles:    data.cuposDisponibles ?? 0,
+                tiempoPromedio: data.tiempoPromedio ?? 0,
             });
         } catch (error) {
             console.error('DashboardStats: error al obtener estadísticas.', error);
@@ -70,7 +70,7 @@ export function DashboardStats() {
             bg: 'bg-white dark:bg-slate-900',
         },
         {
-            label: 'Espacios Disponibles',
+            label: 'Vehículos Activos',
             value: loading ? '—' : stats.disponibles,
             color: 'text-green-500',
             barColor: 'bg-green-500',
