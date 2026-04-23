@@ -60,6 +60,7 @@ export function Layout({ children }) {
         { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
         { path: '/entradas', label: 'Entradas', icon: 'login' },
         { path: '/salidas', label: 'Salidas', icon: 'logout' },
+        { path: '/clientes', label: 'Clientes', icon: 'people' },
         { path: '/vehiculos-dentro', label: 'Vehículos dentro', icon: 'directions_car' },
         { path: '/cupos', label: 'Cupos', icon: 'grid_view' },
         { path: '/tarifas', label: 'Tarifas', icon: 'payments' },

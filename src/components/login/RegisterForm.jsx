@@ -63,7 +63,7 @@ export const RegisterForm = () => {
         setErrorMsg('');
         try {
             const data = await authService.register({
-                nombreCompleto: formData.nombre,
+                nombre: formData.nombre,
                 email: formData.email,
                 password: formData.password,
             });

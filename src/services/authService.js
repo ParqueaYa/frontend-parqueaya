@@ -6,8 +6,8 @@ const authService = {
         return response.data;
     },
 
-    register: async (userData) => {
-        const response = await axiosInstance.post('/api/auth/registro', userData);
+    register: async ({ nombre, apellido, email, password, rol }) => {
+        const response = await axiosInstance.post('/api/auth/registro', { nombre, apellido, email, password, rol });
         return response.data;
     },
 
