@@ -56,6 +56,11 @@ const vehiculoService = {
     eliminar: async (id) => {
         await axiosInstance.delete(`/api/vehiculos/${id}`);
     },
+
+    asociarCliente: async (vehiculoId, clienteId) => {
+        const response = await axiosInstance.patch(`/api/vehiculos/${vehiculoId}/asociar-cliente/${clienteId}`);
+        return response.data;
+    },
 };
 
 export default vehiculoService;
