@@ -1,22 +1,16 @@
-// app/salidas/page.js
-import { Suspense } from 'react';
 import { Layout } from '@/components/layout/Layout';
-import { Salidas } from '@/components/salidas/Salidas';
+import { VehiculosDentro } from '@/components/vehiculosdentro/VehiculosDentro';
 import { LoginHeader } from '@/components/login/LoginHeader';
 import { LoginFooter } from '@/components/login/LoginFooter';
 
-export default function SalidasPage() {
+export default function VehiculosDentroPage() {
     return (
         <Layout>
-            <div className="min-h-screen bg-slate-950 flex flex-col">
+            <div className="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 min-h-screen flex flex-col">
                 <LoginHeader />
-
                 <main className="flex-1">
-                    <Suspense>
-                        <Salidas />
-                    </Suspense>
+                    <VehiculosDentro />
                 </main>
-
                 <LoginFooter />
             </div>
         </Layout>

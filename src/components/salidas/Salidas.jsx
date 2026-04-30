@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { SalidasTitle } from './SalidasTitle';
 import { SalidasSearch } from './SalidasSearch';
 import { SalidasVehicleInfo } from './SalidasVehicleInfo';
@@ -8,10 +9,18 @@ import { SalidasActions } from './SalidasActions';
 import vehiculoService from "@/services/vehiculoService";
 
 export function Salidas() {
+    const searchParams = useSearchParams();
     const [placaBusqueda, setPlacaBusqueda]     = useState("");
     const [vehiculoEncontrado, setVehiculoEncontrado] = useState(null);
     const [loading, setLoading]                 = useState(false);
     const [mensaje, setMensaje]                 = useState(null);
+
+    useEffect(() => {
+        const placa = searchParams.get('placa');
+        if (placa) {
+            setPlacaBusqueda(placa.toUpperCase());
+        }
+    }, [searchParams]);
 
     const buscarVehiculo = async () => {
         setLoading(true);
