@@ -63,7 +63,6 @@ export function Layout({ children }) {
         { path: '/clientes', label: 'Clientes', icon: 'people' },
         { path: '/vehiculos', label: 'Vehículos', icon: 'directions_car' },
         { path: '/vehiculos-dentro', label: 'Vehículos dentro', icon: 'local_parking' },
-        { path: '/cupos', label: 'Cupos', icon: 'grid_view' },
         { path: '/tarifas', label: 'Tarifas', icon: 'payments' },
         { path: '/usuarios', label: 'Usuarios', icon: 'group' },
         { path: '/reportes', label: 'Reportes', icon: 'analytics' },

@@ -7,6 +7,7 @@ import tipoVehiculoService from '@/services/tipoVehiculoService';
 import { TarifasTitle } from './TarifasTitle';
 import { TarifasTable } from './TarifasTable';
 import { TarifasForm } from './TarifasForm';
+import { TiposVehiculoPanel } from './TiposVehiculoPanel';
 
 export function Tarifas() {
     const pathname = usePathname();
@@ -19,6 +20,7 @@ export function Tarifas() {
     const [tarifaEditando, setTarifaEditando] = useState(null);
     const [loadingForm, setLoadingForm]       = useState(false);
     const [mensaje, setMensaje]               = useState(null);
+    const [tiposVisible, setTiposVisible]     = useState(false);
 
     const cargarDatos = async () => {
         setLoading(true);
@@ -36,15 +38,24 @@ export function Tarifas() {
         cargarDatos();
     }, [pathname]);
 
+    const handleGestionarTipos = () => {
+        setTiposVisible((v) => !v);
+        setFormVisible(false);
+        setTarifaEditando(null);
+        setMensaje(null);
+    };
+
     const handleNuevo = () => {
         setTarifaEditando(null);
         setFormVisible(true);
+        setTiposVisible(false);
         setMensaje(null);
     };
 
     const handleEditar = (tarifa) => {
         setTarifaEditando(tarifa);
         setFormVisible(true);
+        setTiposVisible(false);
         setMensaje(null);
     };
 
@@ -116,7 +127,18 @@ export function Tarifas() {
                 onNuevo={handleNuevo}
                 onEditar={handleEditar}
                 onEliminar={handleEliminar}
+                onGestionarTipos={handleGestionarTipos}
+                tiposVisible={tiposVisible}
             />
+
+            {tiposVisible && (
+                <TiposVehiculoPanel
+                    tiposVehiculo={tiposVehiculo}
+                    loading={loading}
+                    onTiposChanged={cargarDatos}
+                    onCerrar={() => setTiposVisible(false)}
+                />
+            )}
 
             {formVisible && (
                 <TarifasForm

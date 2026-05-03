@@ -14,7 +14,7 @@ const getTipoTarifaBadge = (tipo) => {
     return 'bg-slate-800 border-slate-700 text-slate-400';
 };
 
-export function TarifasTable({ tarifas, loading, filtroTipo, setFiltroTipo, onNuevo, onEditar, onEliminar }) {
+export function TarifasTable({ tarifas, loading, filtroTipo, setFiltroTipo, onNuevo, onEditar, onEliminar, onGestionarTipos, tiposVisible }) {
     const filtradas = useMemo(() => {
         if (filtroTipo === 'TODAS') return tarifas;
         return tarifas.filter((t) => t.tipoTarifa === filtroTipo);
@@ -51,13 +51,26 @@ export function TarifasTable({ tarifas, loading, filtroTipo, setFiltroTipo, onNu
                     </div>
                 </div>
 
-                <button
-                    onClick={onNuevo}
-                    className="flex items-center gap-2 px-4 py-1.5 bg-primary border border-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-transparent hover:text-primary transition-all shrink-0"
-                >
-                    <span className="material-symbols-outlined text-sm">add</span>
-                    Nueva
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={onGestionarTipos}
+                        className={`flex items-center gap-2 px-4 py-1.5 border text-[10px] font-black uppercase tracking-widest transition-all shrink-0 ${
+                            tiposVisible
+                                ? 'bg-slate-700 border-slate-600 text-slate-200'
+                                : 'border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200'
+                        }`}
+                    >
+                        <span className="material-symbols-outlined text-sm">category</span>
+                        Tipos
+                    </button>
+                    <button
+                        onClick={onNuevo}
+                        className="flex items-center gap-2 px-4 py-1.5 bg-primary border border-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-transparent hover:text-primary transition-all shrink-0"
+                    >
+                        <span className="material-symbols-outlined text-sm">add</span>
+                        Nueva
+                    </button>
+                </div>
             </div>
 
             {/* Table */}
