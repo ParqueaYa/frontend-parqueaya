@@ -7,10 +7,13 @@ import { ClientesTitle } from './ClientesTitle';
 import { ClientesTable } from './ClientesTable';
 import { ClientesForm } from './ClientesForm';
 import { ClientesVehiculos } from './ClientesVehiculos';
+import { ClientesMensualidad } from './ClientesMensualidad';
+import { MensualidadesList } from './MensualidadesList';
 
 export function Clientes() {
     const pathname = usePathname();
 
+    const [tab, setTab]                       = useState('clientes'); // 'clientes' | 'mensualidades'
     const [clientes, setClientes]             = useState([]);
     const [loading, setLoading]               = useState(true);
     const [busqueda, setBusqueda]             = useState('');
@@ -19,6 +22,7 @@ export function Clientes() {
     const [loadingForm, setLoadingForm]       = useState(false);
     const [mensaje, setMensaje]               = useState(null);
     const [vehiculosPanel, setVehiculosPanel] = useState(null);
+    const [mensualidadPanel, setMensualidadPanel] = useState(null);
 
     const cargarClientes = async () => {
         setLoading(true);
@@ -33,14 +37,17 @@ export function Clientes() {
     };
 
     useEffect(() => {
-        cargarClientes();
-    }, [pathname]);
+        if (tab === 'clientes') {
+            cargarClientes();
+        }
+    }, [pathname, tab]);
 
     const handleNuevo = () => {
         setClienteEditando(null);
         setFormVisible(true);
         setMensaje(null);
         setVehiculosPanel(null);
+        setMensualidadPanel(null);
     };
 
     const handleEditar = (cliente) => {
@@ -48,6 +55,7 @@ export function Clientes() {
         setFormVisible(true);
         setMensaje(null);
         setVehiculosPanel(null);
+        setMensualidadPanel(null);
     };
 
     const handleCancelar = () => {
@@ -88,6 +96,7 @@ export function Clientes() {
             await clienteService.eliminar(cliente.id);
             setMensaje({ tipo: 'exito', texto: `Cliente ${cliente.nombre} ${cliente.apellido} eliminado.` });
             if (vehiculosPanel?.cliente.id === cliente.id) setVehiculosPanel(null);
+            if (mensualidadPanel?.cliente.id === cliente.id) setMensualidadPanel(null);
             if (clienteEditando?.id === cliente.id) { setFormVisible(false); setClienteEditando(null); }
             await cargarClientes();
         } catch (error) {
@@ -97,6 +106,7 @@ export function Clientes() {
     };
 
     const handleVerVehiculos = async (cliente) => {
+        setMensualidadPanel(null);
         if (vehiculosPanel?.cliente.id === cliente.id) {
             setVehiculosPanel(null);
             return;
@@ -110,9 +120,41 @@ export function Clientes() {
         }
     };
 
+    const handleVerMensualidad = (cliente) => {
+        setVehiculosPanel(null);
+        if (mensualidadPanel?.cliente.id === cliente.id) {
+            setMensualidadPanel(null);
+            return;
+        }
+        setMensualidadPanel({ cliente });
+    };
+
     return (
         <div className="w-full px-4 py-8">
             <ClientesTitle />
+
+            <div className="flex gap-1 mb-6 border-b border-slate-800">
+                <button
+                    onClick={() => setTab('clientes')}
+                    className={`px-6 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
+                        tab === 'clientes'
+                            ? 'text-primary border-b-2 border-primary bg-primary/5'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+                    }`}
+                >
+                    Registro de Clientes
+                </button>
+                <button
+                    onClick={() => setTab('mensualidades')}
+                    className={`px-6 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
+                        tab === 'mensualidades'
+                            ? 'text-emerald-500 border-b-2 border-emerald-500 bg-emerald-500/5'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+                    }`}
+                >
+                    Planes Mensuales
+                </button>
+            </div>
 
             {mensaje && (
                 <div className={`mb-4 text-xs font-bold px-4 py-3 border tracking-wide ${
@@ -124,34 +166,51 @@ export function Clientes() {
                 </div>
             )}
 
-            <ClientesTable
-                clientes={clientes}
-                loading={loading}
-                busqueda={busqueda}
-                setBusqueda={setBusqueda}
-                onNuevo={handleNuevo}
-                onEditar={handleEditar}
-                onEliminar={handleEliminar}
-                onVerVehiculos={handleVerVehiculos}
-                clienteVehiculosId={vehiculosPanel?.cliente.id ?? null}
-            />
+            {tab === 'clientes' && (
+                <>
+                    <ClientesTable
+                        clientes={clientes}
+                        loading={loading}
+                        busqueda={busqueda}
+                        setBusqueda={setBusqueda}
+                        onNuevo={handleNuevo}
+                        onEditar={handleEditar}
+                        onEliminar={handleEliminar}
+                        onVerVehiculos={handleVerVehiculos}
+                        onVerMensualidad={handleVerMensualidad}
+                        clienteVehiculosId={vehiculosPanel?.cliente.id ?? null}
+                        clienteMensualidadId={mensualidadPanel?.cliente.id ?? null}
+                    />
 
-            {formVisible && (
-                <ClientesForm
-                    clienteEditando={clienteEditando}
-                    onGuardar={handleGuardar}
-                    onCancelar={handleCancelar}
-                    loading={loadingForm}
-                />
+                    {formVisible && (
+                        <ClientesForm
+                            clienteEditando={clienteEditando}
+                            onGuardar={handleGuardar}
+                            onCancelar={handleCancelar}
+                            loading={loadingForm}
+                        />
+                    )}
+
+                    {vehiculosPanel && (
+                        <ClientesVehiculos
+                            cliente={vehiculosPanel.cliente}
+                            vehiculos={vehiculosPanel.vehiculos}
+                            loading={vehiculosPanel.loading}
+                            onCerrar={() => setVehiculosPanel(null)}
+                        />
+                    )}
+
+                    {mensualidadPanel && (
+                        <ClientesMensualidad
+                            cliente={mensualidadPanel.cliente}
+                            onCerrar={() => setMensualidadPanel(null)}
+                        />
+                    )}
+                </>
             )}
 
-            {vehiculosPanel && (
-                <ClientesVehiculos
-                    cliente={vehiculosPanel.cliente}
-                    vehiculos={vehiculosPanel.vehiculos}
-                    loading={vehiculosPanel.loading}
-                    onCerrar={() => setVehiculosPanel(null)}
-                />
+            {tab === 'mensualidades' && (
+                <MensualidadesList />
             )}
         </div>
     );

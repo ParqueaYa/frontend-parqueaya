@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-export function ClientesTable({ clientes, loading, busqueda, setBusqueda, onNuevo, onEditar, onEliminar, onVerVehiculos, clienteVehiculosId }) {
+export function ClientesTable({ clientes, loading, busqueda, setBusqueda, onNuevo, onEditar, onEliminar, onVerVehiculos, onVerMensualidad, clienteVehiculosId, clienteMensualidadId }) {
     const filtrados = useMemo(() => {
         const term = busqueda.trim().toLowerCase();
         if (!term) return clientes;
@@ -76,7 +76,7 @@ export function ClientesTable({ clientes, loading, busqueda, setBusqueda, onNuev
                             filtrados.map((cliente) => (
                                 <tr
                                     key={cliente.id}
-                                    className={`transition-colors ${clienteVehiculosId === cliente.id ? 'bg-slate-800/40' : 'hover:bg-slate-800/20'}`}
+                                    className={`transition-colors ${(clienteVehiculosId === cliente.id || clienteMensualidadId === cliente.id) ? 'bg-slate-800/40' : 'hover:bg-slate-800/20'}`}
                                 >
                                     <td className="px-4 py-4 text-sm font-bold text-slate-100 tracking-tight">
                                         {cliente.nombre} {cliente.apellido}
@@ -92,6 +92,17 @@ export function ClientesTable({ clientes, loading, busqueda, setBusqueda, onNuev
                                     </td>
                                     <td className="px-4 py-4">
                                         <div className="flex items-center gap-1">
+                                            <button
+                                                onClick={() => onVerMensualidad(cliente)}
+                                                title="Gestionar Mensualidad"
+                                                className={`p-1.5 border transition-colors ${
+                                                    clienteMensualidadId === cliente.id
+                                                        ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                                                        : 'border-slate-700 text-slate-400 hover:border-emerald-500 hover:text-emerald-400'
+                                                }`}
+                                            >
+                                                <span className="material-symbols-outlined text-base">calendar_month</span>
+                                            </button>
                                             <button
                                                 onClick={() => onVerVehiculos(cliente)}
                                                 title="Ver vehículos"
