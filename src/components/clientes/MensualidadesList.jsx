@@ -64,7 +64,7 @@ export function MensualidadesList() {
                 <table className="w-full border-collapse">
                     <thead>
                         <tr className="bg-slate-800/30">
-                            {['Cliente', 'Cédula', 'Fecha Inicio', 'Fecha Fin', 'Monto', 'Estado'].map((col) => (
+                            {['Cliente', 'Vehículo', 'Fecha Inicio', 'Fecha Fin', 'Monto', 'Estado'].map((col) => (
                                 <th key={col} className="px-4 py-3 border-b border-slate-800 text-left text-[10px] font-bold uppercase tracking-wider text-slate-500">
                                     {col}
                                 </th>
@@ -84,9 +84,10 @@ export function MensualidadesList() {
                                 <tr key={m.id} className="hover:bg-slate-800/20 transition-colors">
                                     <td className="px-4 py-4 text-sm font-bold text-slate-100 tracking-tight">
                                         {m.cliente?.nombre} {m.cliente?.apellido}
+                                        <div className="text-[10px] font-mono text-slate-400 tracking-widest mt-1">CC: {m.cliente?.cedula ?? '—'}</div>
                                     </td>
-                                    <td className="px-4 py-4 text-xs font-mono text-slate-300 tracking-widest">
-                                        {m.cliente?.cedula ?? '—'}
+                                    <td className="px-4 py-4 text-sm font-bold text-slate-100 tracking-widest">
+                                        {m.vehiculo?.placa ?? '—'}
                                     </td>
                                     <td className="px-4 py-4 text-xs font-mono text-slate-400">
                                         {m.fechaInicio ? new Date(m.fechaInicio).toLocaleDateString() : '—'}
@@ -95,11 +96,11 @@ export function MensualidadesList() {
                                         {m.fechaFin ? new Date(m.fechaFin).toLocaleDateString() : '—'}
                                     </td>
                                     <td className="px-4 py-4 text-sm font-bold text-emerald-400 tracking-widest font-mono">
-                                        ${(m.monto || 0).toLocaleString()}
+                                        ${(m.tarifa?.valor || 0).toLocaleString()}
                                     </td>
                                     <td className="px-4 py-4">
                                         <span className="px-2 py-1 text-[10px] font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                                            Activa
+                                            {m.estado || 'ACTIVA'}
                                         </span>
                                     </td>
                                 </tr>
