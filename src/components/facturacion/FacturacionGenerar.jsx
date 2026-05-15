@@ -12,6 +12,8 @@ export function FacturacionGenerar() {
     const [error, setError] = useState(null);
     const [datosParqueo, setDatosParqueo] = useState(null);
     const [clienteAsociado, setClienteAsociado] = useState(null);
+    const [vehiculoId, setVehiculoId] = useState(null);
+    const [registroParqueoId, setRegistroParqueoId] = useState(null);
     const [facturaGenerada, setFacturaGenerada] = useState(null);
 
     const handleBuscar = async (e) => {
@@ -21,6 +23,8 @@ export function FacturacionGenerar() {
         setError(null);
         setDatosParqueo(null);
         setClienteAsociado(null);
+        setVehiculoId(null);
+        setRegistroParqueoId(null);
         setFacturaGenerada(null);
         
         try {
@@ -29,12 +33,24 @@ export function FacturacionGenerar() {
             
             try {
                 const vehiculoInfo = await vehiculoService.obtenerPorPlaca(placa.toUpperCase());
+                setVehiculoId(vehiculoInfo?.id || null);
                 if (vehiculoInfo?.cliente) {
                     setClienteAsociado(vehiculoInfo.cliente);
                 }
             } catch (err) {
                 // Ignore
             }
+
+            try {
+                const activos = await vehiculoService.listarActivos();
+                const activo = activos.find(a => a.vehiculo?.placa === placa.toUpperCase());
+                if (activo) {
+                    setRegistroParqueoId(activo.id);
+                }
+            } catch (err) {
+                // Ignore
+            }
+
         } catch (error) {
             const status = error?.response?.status;
             if (status === 404) {
@@ -49,27 +65,32 @@ export function FacturacionGenerar() {
 
     const handleGenerar = async () => {
         if (!datosParqueo) return;
+        
+        if (!vehiculoId || !clienteAsociado) {
+            setError('Para generar una factura oficial, el vehículo DEBE estar registrado y tener un cliente asociado.');
+            return;
+        }
+
         setLoading(true);
         setError(null);
         
         try {
             const dto = {
-                placa: datosParqueo.placa,
-                monto: datosParqueo.costoEstimado || 0,
-                clienteId: clienteAsociado?.id || null,
-                fechaIngreso: datosParqueo.fechaIngreso,
-                fechaSalida: new Date().toISOString()
+                registroParqueoId: registroParqueoId,
+                clienteId: clienteAsociado.id,
+                vehiculoId: vehiculoId,
+                detalle: `Servicio de parqueo - Tiempo transcurrido: ${datosParqueo.tiempoTranscurrido || 'N/A'}`
             };
             
             const nuevaFactura = await facturaService.generar(dto);
             setFacturaGenerada({
                 ...nuevaFactura,
-                tiempoMinutos: datosParqueo.tiempoMinutos,
+                tiempoMinutos: datosParqueo.minutosTranscurridos,
                 fechaIngreso: datosParqueo.fechaIngreso
             });
             setDatosParqueo(null);
         } catch (error) {
-            setError(error?.response?.data?.message || 'Error al generar la factura.');
+            setError(error?.response?.data?.message || 'Error al generar la factura en el backend.');
         } finally {
             setLoading(false);
         }
@@ -156,24 +177,32 @@ export function FacturacionGenerar() {
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Cliente Asociado</span>
-                            <span className="text-slate-300 font-bold">
-                                {clienteAsociado ? `${clienteAsociado.nombre} ${clienteAsociado.apellido}` : 'Consumidor Final (No registrado)'}
+                            <span className={`font-bold ${clienteAsociado ? 'text-slate-300' : 'text-red-400'}`}>
+                                {clienteAsociado ? `${clienteAsociado.nombre} ${clienteAsociado.apellido}` : 'Sin Cliente Asociado'}
                             </span>
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Tiempo Transcurrido</span>
-                            <span className="text-slate-300 font-mono">{Math.floor(datosParqueo.tiempoMinutos / 60)}h {datosParqueo.tiempoMinutos % 60}m</span>
+                            <span className="text-slate-300 font-mono">
+                                {datosParqueo.tiempoTranscurrido || (datosParqueo.minutosTranscurridos != null ? `${Math.floor(datosParqueo.minutosTranscurridos / 60)}h ${datosParqueo.minutosTranscurridos % 60}m` : 'N/A')}
+                            </span>
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-1">Costo Estimado</span>
-                            <span className="text-2xl font-black text-primary">${datosParqueo.costoEstimado?.toLocaleString() || '0'}</span>
+                            <span className="text-2xl font-black text-primary">${datosParqueo.costoAcumulado?.toLocaleString() || datosParqueo.costoEstimado?.toLocaleString() || '0'}</span>
                         </div>
                     </div>
+
+                    {!clienteAsociado && (
+                        <div className="mb-4 text-[10px] font-bold px-4 py-2 border tracking-wide bg-amber-500/10 border-amber-500/30 text-amber-500">
+                            Advertencia: No puede generar una factura oficial si el vehículo no tiene un cliente asignado en el sistema. Debe registrar el cliente en el módulo correspondiente primero.
+                        </div>
+                    )}
 
                     <div className="flex justify-end border-t border-slate-700 pt-4 mt-4">
                         <button
                             onClick={handleGenerar}
-                            disabled={loading}
+                            disabled={loading || !clienteAsociado || !vehiculoId}
                             className="flex items-center gap-2 px-6 py-2.5 bg-primary border border-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-transparent hover:text-primary transition-all disabled:opacity-50"
                         >
                             <span className="material-symbols-outlined text-base">receipt_long</span>
