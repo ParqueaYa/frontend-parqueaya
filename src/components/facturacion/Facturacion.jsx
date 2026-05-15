@@ -1,27 +1,44 @@
-// components/facturacion/Facturacion.jsx
+'use client';
+
+import { useState } from 'react';
 import { FacturacionTitle } from './FacturacionTitle';
-import { FacturacionHeader } from './FacturacionHeader';
-import { FacturacionVehicleInfo } from './FacturacionVehicleInfo';
-import { FacturacionTotal } from './FacturacionTotal';
-import { FacturacionFooter } from './FacturacionFooter';
-import { FacturacionPrintButton } from './FacturacionPrintButton';
+import { FacturacionGenerar } from './FacturacionGenerar';
+import { FacturacionHistorial } from './FacturacionHistorial';
 
 export function Facturacion() {
+    const [tab, setTab] = useState('generar');
+
     return (
-        <div className="p-5">
+        <div className="w-full px-4 py-8">
             <FacturacionTitle />
 
-            <div className="border-2 border-black p-[30px] bg-white max-w-[800px]">
-                <FacturacionHeader />
-                <div className="border-t-2 border-black mb-[30px]"></div>
-                <FacturacionVehicleInfo />
-                <div className="mb-[30px]">
-                    <FacturacionTotal />
-                </div>
-                <FacturacionFooter />
+            <div className="flex gap-1 mb-6 border-b border-slate-800">
+                <button
+                    onClick={() => setTab('generar')}
+                    className={`px-6 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
+                        tab === 'generar'
+                            ? 'text-primary border-b-2 border-primary bg-primary/5'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+                    }`}
+                >
+                    Generar Factura
+                </button>
+                <button
+                    onClick={() => setTab('historial')}
+                    className={`px-6 py-3 text-xs font-bold uppercase tracking-widest transition-all ${
+                        tab === 'historial'
+                            ? 'text-primary border-b-2 border-primary bg-primary/5'
+                            : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+                    }`}
+                >
+                    Consultar Historial
+                </button>
             </div>
 
-            <FacturacionPrintButton />
+            <div>
+                {tab === 'generar' && <FacturacionGenerar />}
+                {tab === 'historial' && <FacturacionHistorial />}
+            </div>
         </div>
     );
 }
