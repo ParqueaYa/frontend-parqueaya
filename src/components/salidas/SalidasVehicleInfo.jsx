@@ -32,13 +32,25 @@ export function SalidasVehicleInfo({ vehiculoEncontrado }) {
             </div>
             <div className="border border-slate-800 bg-slate-900 overflow-hidden">
                 <InfoRow label="PLACA:" value={vehiculoEncontrado.placa} />
-                <InfoRow label="HORA ENTRADA:" value={vehiculoEncontrado.horaEntrada} />
-                <InfoRow label="HORA SALIDA:" value={vehiculoEncontrado.horaSalida} />
-                <InfoRow label="TIEMPO TOTAL:" value={vehiculoEncontrado.tiempoTotal} />
-                <InfoRow label="TARIFA APLICADA:" value={vehiculoEncontrado.tarifaAplicada} />
+                <InfoRow 
+                    label="HORA ENTRADA:" 
+                    value={vehiculoEncontrado.horaEntrada || (vehiculoEncontrado.fechaIngreso ? new Date(vehiculoEncontrado.fechaIngreso).toLocaleString() : '')} 
+                />
+                <InfoRow 
+                    label="HORA SALIDA:" 
+                    value={vehiculoEncontrado.horaSalida || new Date().toLocaleString()} 
+                />
+                <InfoRow 
+                    label="TIEMPO TOTAL:" 
+                    value={vehiculoEncontrado.tiempoTotal || vehiculoEncontrado.tiempoTranscurrido} 
+                />
+                <InfoRow 
+                    label="TARIFA APLICADA:" 
+                    value={vehiculoEncontrado.tarifaAplicada || (vehiculoEncontrado.tarifaHora ? `$${vehiculoEncontrado.tarifaHora}/hora` : '')} 
+                />
                 <InfoRow
                     label="MONTO A PAGAR:"
-                    value={vehiculoEncontrado.montoPagar}
+                    value={vehiculoEncontrado.montoPagar || (vehiculoEncontrado.costoAcumulado != null ? `$${vehiculoEncontrado.costoAcumulado.toLocaleString()}` : '')}
                     isLast={true}
                     highlight={true}
                 />

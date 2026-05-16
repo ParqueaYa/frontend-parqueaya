@@ -56,20 +56,24 @@ export function Layout({ children }) {
 
     const avatarLetter = userData.username.charAt(0).toUpperCase();
 
-    const menuItems = [
-        { path: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-        { path: '/entradas', label: 'Entradas', icon: 'login' },
-        { path: '/salidas', label: 'Salidas', icon: 'logout' },
-        { path: '/clientes', label: 'Clientes', icon: 'people' },
-        { path: '/vehiculos', label: 'Vehículos', icon: 'directions_car' },
-        { path: '/vehiculos-dentro', label: 'Vehículos dentro', icon: 'local_parking' },
-        { path: '/tarifas', label: 'Tarifas', icon: 'payments' },
-        { path: '/usuarios', label: 'Usuarios', icon: 'group' },
-        { path: '/reportes', label: 'Reportes', icon: 'analytics' },
-        { path: '/facturacion', label: 'Facturación', icon: 'receipt_long' },
-        { path: '/perfil', label: 'Perfil', icon: 'account_circle' },
-        { path: '/configuracion', label: 'Configuración', icon: 'settings' },
+    const menuItemsConfig = [
+        { path: '/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['ADMINISTRADOR', 'OPERADOR', 'EMPLEADO'] },
+        { path: '/entradas', label: 'Entradas', icon: 'login', roles: ['ADMINISTRADOR', 'OPERADOR', 'EMPLEADO'] },
+        { path: '/salidas', label: 'Salidas', icon: 'logout', roles: ['ADMINISTRADOR', 'OPERADOR', 'EMPLEADO'] },
+        { path: '/clientes', label: 'Clientes', icon: 'people', roles: ['ADMINISTRADOR', 'OPERADOR', 'EMPLEADO'] },
+        { path: '/vehiculos', label: 'Vehículos', icon: 'directions_car', roles: ['ADMINISTRADOR', 'OPERADOR', 'EMPLEADO'] },
+        { path: '/vehiculos-dentro', label: 'Vehículos dentro', icon: 'local_parking', roles: ['ADMINISTRADOR', 'OPERADOR', 'EMPLEADO'] },
+        { path: '/tarifas', label: 'Tarifas', icon: 'payments', roles: ['ADMINISTRADOR', 'OPERADOR'] },
+        { path: '/facturacion', label: 'Facturación', icon: 'receipt_long', roles: ['ADMINISTRADOR', 'OPERADOR', 'EMPLEADO'] },
+        { path: '/reportes', label: 'Reportes', icon: 'analytics', roles: ['ADMINISTRADOR'] },
+        { path: '/usuarios', label: 'Usuarios', icon: 'group', roles: ['ADMINISTRADOR'] },
+        { path: '/perfil', label: 'Perfil', icon: 'account_circle', roles: ['ADMINISTRADOR', 'OPERADOR', 'EMPLEADO'] },
+        { path: '/configuracion', label: 'Configuración', icon: 'settings', roles: ['ADMINISTRADOR'] },
     ];
+
+    // Filtrar elementos de menú según el rol actual
+    const currentRole = userData.role.toUpperCase();
+    const menuItems = menuItemsConfig.filter(item => item.roles.includes(currentRole));
 
     const handleLogout = () => {
         localStorage.clear();
