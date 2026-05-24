@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Reportes } from '@/components/reportes/Reportes';
 import { LoginHeader } from '@/components/login/LoginHeader';

@@ -1,51 +1,90 @@
 // components/usuarios/Usuarios.jsx
 'use client';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UsuariosTitle } from './UsuariosTitle';
 import { UsuariosCreateButton } from './UsuariosCreateButton';
 import { UsuariosForm } from './UsuariosForm';
 import { UsuariosTable } from './UsuariosTable';
+import usuarioService from '@/services/usuarioService';
+import authService from '@/services/authService';
 
 export function Usuarios() {
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
     
-    const [usuarios, setUsuarios] = useState([
-        { id: 1, nombre: "Juan Pérez", email: "juan@parqueo-ya.com", rol: "Administrador", google: "Sí", estado: "Activo" },
-        { id: 2, nombre: "María García", email: "maria@parqueo-ya.com", rol: "Empleado", google: "No", estado: "Activo" },
-        { id: 3, nombre: "Carlos López", email: "carlos@parqueo-ya.com", rol: "Empleado", google: "Sí", estado: "Activo" },
-        { id: 4, nombre: "Ana Martínez", email: "ana@parqueo-ya.com", rol: "Empleado", google: "No", estado: "Inactivo" },
-    ]);
+    const [usuarios, setUsuarios] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     const [nuevoUsuario, setNuevoUsuario] = useState({
         id: null,
         nombre: "",
+        apellido: "",
         email: "",
-        rol: "Empleado",
+        rol: "OPERADOR",
         password: ""
     });
 
     const [modoEdicion, setModoEdicion] = useState(false);
 
-    const crearOActualizarEmpleado = () => {
-        if (modoEdicion) {
-            setUsuarios(usuarios.map(u => u.id === nuevoUsuario.id ? { ...u, nombre: nuevoUsuario.nombre, email: nuevoUsuario.email, rol: nuevoUsuario.rol } : u));
-            alert(`Usuario ${nuevoUsuario.nombre} actualizado (Mock Frontend)`);
-        } else {
-            const nuevoId = Math.max(...usuarios.map(u => u.id)) + 1;
-            setUsuarios([...usuarios, { ...nuevoUsuario, id: nuevoId, google: "No", estado: "Activo" }]);
-            alert(`Usuario ${nuevoUsuario.nombre} creado (Mock Frontend)`);
+    useEffect(() => {
+        fetchUsuarios();
+    }, []);
+
+    const fetchUsuarios = async () => {
+        setIsLoading(true);
+        try {
+            const data = await usuarioService.listar();
+            const mappedData = data.map(u => ({
+                ...u,
+                estado: u.activo ? "Activo" : "Inactivo",
+                google: u.authProvider === 'GOOGLE' ? "Sí" : "No"
+            }));
+            setUsuarios(mappedData);
+            setError(null);
+        } catch (err) {
+            console.error("Error al cargar usuarios:", err);
+            setError("No se pudieron cargar los usuarios.");
+        } finally {
+            setIsLoading(false);
         }
-        
-        setNuevoUsuario({ id: null, nombre: "", email: "", rol: "Empleado", password: "" });
-        setMostrarFormulario(false);
-        setModoEdicion(false);
+    };
+
+    const crearOActualizarEmpleado = async () => {
+        try {
+            if (modoEdicion) {
+                await usuarioService.actualizar(nuevoUsuario.id, {
+                    nombre: nuevoUsuario.nombre,
+                    apellido: nuevoUsuario.apellido || "",
+                    rol: nuevoUsuario.rol
+                });
+                alert(`Usuario ${nuevoUsuario.nombre} actualizado`);
+            } else {
+                await authService.register({
+                    nombre: nuevoUsuario.nombre,
+                    apellido: nuevoUsuario.apellido || "",
+                    email: nuevoUsuario.email,
+                    password: nuevoUsuario.password,
+                    rol: nuevoUsuario.rol
+                });
+                alert(`Usuario ${nuevoUsuario.nombre} creado`);
+            }
+            
+            setNuevoUsuario({ id: null, nombre: "", apellido: "", email: "", rol: "OPERADOR", password: "" });
+            setMostrarFormulario(false);
+            setModoEdicion(false);
+            fetchUsuarios();
+        } catch (error) {
+            console.error("Error al guardar usuario:", error);
+            alert("Ocurrió un error al guardar el usuario.");
+        }
     };
 
     const iniciarEdicion = (usuario) => {
         setNuevoUsuario({
             id: usuario.id,
             nombre: usuario.nombre,
+            apellido: usuario.apellido || "",
             email: usuario.email,
             rol: usuario.rol,
             password: "" // Se deja en blanco por seguridad
@@ -55,26 +94,25 @@ export function Usuarios() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    const toggleEstado = (id) => {
-        setUsuarios(usuarios.map(u => {
-            if (u.id === id) {
-                const nuevoEstado = u.estado === "Activo" ? "Inactivo" : "Activo";
-                alert(`Usuario ${u.nombre} marcado como ${nuevoEstado} (Mock Frontend)`);
-                return { ...u, estado: nuevoEstado };
-            }
-            return u;
-        }));
+    const toggleEstado = async (id) => {
+        try {
+            await usuarioService.cambiarEstado(id);
+            fetchUsuarios();
+        } catch (error) {
+            console.error("Error al cambiar estado:", error);
+            alert("No se pudo cambiar el estado del usuario.");
+        }
     };
 
     const resetearPassword = (nombre) => {
-         alert(`Se ha enviado un enlace de recuperación a ${nombre} (Mock Frontend)`);
+         alert(`Se ha enviado un enlace de recuperación a ${nombre}`);
     };
 
     const cancelarFormulario = () => {
         setMostrarFormulario(!mostrarFormulario);
         if (mostrarFormulario) {
             setModoEdicion(false);
-            setNuevoUsuario({ id: null, nombre: "", email: "", rol: "Empleado", password: "" });
+            setNuevoUsuario({ id: null, nombre: "", apellido: "", email: "", rol: "OPERADOR", password: "" });
         }
     };
 
@@ -90,6 +128,8 @@ export function Usuarios() {
                     />
                 </div>
 
+                {error && <div className="text-red-500 mb-4">{error}</div>}
+
                 {mostrarFormulario && (
                     <div className="animate-in fade-in slide-in-from-top-4 duration-500">
                         <UsuariosForm
@@ -102,12 +142,16 @@ export function Usuarios() {
                 
                 <div className="bg-slate-900 border border-slate-800 shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
-                    <UsuariosTable 
-                        usuarios={usuarios} 
-                        onEdit={iniciarEdicion}
-                        onToggleStatus={toggleEstado}
-                        onResetPassword={resetearPassword}
-                    />
+                    {isLoading ? (
+                        <div className="p-8 text-center text-slate-400">Cargando usuarios...</div>
+                    ) : (
+                        <UsuariosTable 
+                            usuarios={usuarios} 
+                            onEdit={iniciarEdicion}
+                            onToggleStatus={toggleEstado}
+                            onResetPassword={resetearPassword}
+                        />
+                    )}
                 </div>
             </div>
         </div>

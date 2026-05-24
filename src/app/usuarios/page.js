@@ -1,4 +1,5 @@
 // app/usuarios/page.js
+import { Suspense } from 'react';
 import { Layout } from '@/components/layout/Layout';
 import { Usuarios } from '@/components/usuarios/Usuarios';
 import { LoginHeader } from '@/components/login/LoginHeader';

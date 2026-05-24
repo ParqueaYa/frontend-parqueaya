@@ -7,6 +7,8 @@ import { ClientesTitle } from './ClientesTitle';
 import { ClientesTable } from './ClientesTable';
 import { ClientesForm } from './ClientesForm';
 import { ClientesVehiculos } from './ClientesVehiculos';
+import { ClientesMensualidad } from './ClientesMensualidad';
+import { MensualidadesList } from './MensualidadesList';
 
 export function Clientes() {
     const pathname = usePathname();
@@ -19,6 +21,7 @@ export function Clientes() {
     const [loadingForm, setLoadingForm]       = useState(false);
     const [mensaje, setMensaje]               = useState(null);
     const [vehiculosPanel, setVehiculosPanel] = useState(null);
+    const [mensualidadPanel, setMensualidadPanel] = useState(null);
 
     const cargarClientes = async () => {
         setLoading(true);
@@ -41,6 +44,7 @@ export function Clientes() {
         setFormVisible(true);
         setMensaje(null);
         setVehiculosPanel(null);
+        setMensualidadPanel(null);
     };
 
     const handleEditar = (cliente) => {
@@ -48,6 +52,7 @@ export function Clientes() {
         setFormVisible(true);
         setMensaje(null);
         setVehiculosPanel(null);
+        setMensualidadPanel(null);
     };
 
     const handleCancelar = () => {
@@ -101,6 +106,7 @@ export function Clientes() {
             setVehiculosPanel(null);
             return;
         }
+        setMensualidadPanel(null);
         setVehiculosPanel({ cliente, vehiculos: [], loading: true });
         try {
             const data = await clienteService.obtenerVehiculos(cliente.id);
@@ -108,6 +114,15 @@ export function Clientes() {
         } catch {
             setVehiculosPanel({ cliente, vehiculos: [], loading: false });
         }
+    };
+
+    const handleVerMensualidad = (cliente) => {
+        if (mensualidadPanel?.id === cliente.id) {
+            setMensualidadPanel(null);
+            return;
+        }
+        setVehiculosPanel(null);
+        setMensualidadPanel(cliente);
     };
 
     return (
@@ -133,7 +148,9 @@ export function Clientes() {
                 onEditar={handleEditar}
                 onEliminar={handleEliminar}
                 onVerVehiculos={handleVerVehiculos}
+                onVerMensualidad={handleVerMensualidad}
                 clienteVehiculosId={vehiculosPanel?.cliente.id ?? null}
+                clienteMensualidadId={mensualidadPanel?.id ?? null}
             />
 
             {formVisible && (
@@ -153,6 +170,15 @@ export function Clientes() {
                     onCerrar={() => setVehiculosPanel(null)}
                 />
             )}
+
+            {mensualidadPanel && (
+                <ClientesMensualidad
+                    cliente={mensualidadPanel}
+                    onCerrar={() => setMensualidadPanel(null)}
+                />
+            )}
+
+            <MensualidadesList />
         </div>
     );
 }

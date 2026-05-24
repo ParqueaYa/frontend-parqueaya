@@ -29,6 +29,16 @@ const authService = {
         return response.data;
     },
 
+    forgotPassword: async (email) => {
+        const response = await axiosInstance.post('/api/auth/forgot-password', { email });
+        return response.data;
+    },
+
+    resetPassword: async (token, newPassword) => {
+        const response = await axiosInstance.post('/api/auth/reset-password', { token, newPassword });
+        return response.data;
+    },
+
     guardarSesion: (data) => {
         localStorage.setItem('token', data.token);
         localStorage.setItem('nombreCompleto', data.nombreCompleto);

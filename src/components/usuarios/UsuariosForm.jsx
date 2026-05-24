@@ -43,8 +43,8 @@ export function UsuariosForm({ nuevoUsuario, setNuevoUsuario, crearEmpleado }) {
                         onChange={(e) => setNuevoUsuario({...nuevoUsuario, rol: e.target.value})}
                         className="w-full bg-slate-800 border border-slate-700 px-4 py-2 text-xs text-slate-100 focus:border-violet-500 outline-none transition-colors"
                     >
-                        <option value="admin">Administrador</option>
-                        <option value="empleado">Empleado</option>
+                        <option value="ADMIN">Administrador</option>
+                        <option value="OPERADOR">Operador</option>
                     </select>
                 </div>
                 <div>

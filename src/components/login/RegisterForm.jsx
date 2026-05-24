@@ -23,6 +23,7 @@ export const RegisterForm = () => {
 
     const [formData, setFormData] = useState({
         nombre: '',
+        apellido: '',
         email: '',
         password: '',
         confirmPassword: ''
@@ -64,6 +65,7 @@ export const RegisterForm = () => {
         try {
             const data = await authService.register({
                 nombre: formData.nombre,
+                apellido: formData.apellido,
                 email: formData.email,
                 password: formData.password,
             });
@@ -100,12 +102,24 @@ export const RegisterForm = () => {
 
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-1">
-                    <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-400">Nombre completo</label>
+                    <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-400">Nombre</label>
                     <input
                         name="nombre"
                         type="text"
                         required
-                        placeholder="Ej. Juan Pérez"
+                        placeholder="Ej. Juan"
+                        className="form-input block w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:border-primary focus:ring-0 h-10"
+                        onChange={handleChange}
+                    />
+                </div>
+
+                <div className="space-y-1">
+                    <label className="text-xs font-bold uppercase text-slate-600 dark:text-slate-400">Apellido</label>
+                    <input
+                        name="apellido"
+                        type="text"
+                        required
+                        placeholder="Ej. Pérez"
                         className="form-input block w-full border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:border-primary focus:ring-0 h-10"
                         onChange={handleChange}
                     />

@@ -25,7 +25,21 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
     (response) => response,
-    (error) => Promise.reject(error)
+    (error) => {
+        const status = error?.response?.status;
+        const url = error?.config?.url || '';
+        const isAuthRoute =
+            url.includes('/auth/login') ||
+            url.includes('/auth/registro') ||
+            url.includes('/auth/google');
+
+        if ((status === 401 || status === 403) && !isAuthRoute) {
+            localStorage.clear();
+            window.location.href = '/';
+        }
+
+        return Promise.reject(error);
+    }
 );
 
 export default axiosInstance;

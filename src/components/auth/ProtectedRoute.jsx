@@ -13,7 +13,7 @@ export default function ProtectedRoute({ children }) {
         const token = localStorage.getItem('token') || localStorage.getItem('jwt');
         
         if (!token) {
-            router.push('/auth/login');
+            router.push('/');
         } else {
             setIsAuthenticated(true);
         }

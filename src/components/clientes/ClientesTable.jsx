@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 
-export function ClientesTable({ clientes, loading, busqueda, setBusqueda, onNuevo, onEditar, onEliminar, onVerVehiculos, clienteVehiculosId }) {
+export function ClientesTable({ clientes, loading, busqueda, setBusqueda, onNuevo, onEditar, onEliminar, onVerVehiculos, clienteVehiculosId, onVerMensualidad, clienteMensualidadId }) {
     const filtrados = useMemo(() => {
         const term = busqueda.trim().toLowerCase();
         if (!term) return clientes;
@@ -102,6 +102,17 @@ export function ClientesTable({ clientes, loading, busqueda, setBusqueda, onNuev
                                                 }`}
                                             >
                                                 <span className="material-symbols-outlined text-base">directions_car</span>
+                                            </button>
+                                            <button
+                                                onClick={() => onVerMensualidad(cliente)}
+                                                title="Gestionar mensualidad"
+                                                className={`p-1.5 border transition-colors ${
+                                                    clienteMensualidadId === cliente.id
+                                                        ? 'border-emerald-500 text-emerald-400 bg-emerald-500/10'
+                                                        : 'border-slate-700 text-slate-400 hover:border-emerald-500 hover:text-emerald-400'
+                                                }`}
+                                            >
+                                                <span className="material-symbols-outlined text-base">calendar_month</span>
                                             </button>
                                             <button
                                                 onClick={() => onEditar(cliente)}
