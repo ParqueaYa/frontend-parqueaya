@@ -20,7 +20,7 @@ const statsService = {
         });
 
         const ingresosHoy = todasLasFacturas
-            .filter((f) => f.fecha?.startsWith(hoy))
+            .filter((f) => f.fechaEmision?.startsWith(hoy))
             .reduce((acc, f) => acc + (f.total ?? f.monto ?? 0), 0);
 
         const minutosFinalizados = registrosFinalizadosHoy

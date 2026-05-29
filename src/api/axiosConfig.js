@@ -12,7 +12,8 @@ axiosInstance.interceptors.request.use(
         const token = localStorage.getItem('token');
         const isAuthRoute =
             config.url.includes('/auth/registro') ||
-            config.url.includes('/auth/login');
+            config.url.includes('/auth/login') ||
+            config.url.includes('/auth/google');
 
         if (token && !isAuthRoute) {
             config.headers['Authorization'] = `Bearer ${token}`;

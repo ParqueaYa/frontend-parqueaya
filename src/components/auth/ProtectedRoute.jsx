@@ -11,9 +11,13 @@ export default function ProtectedRoute({ children }) {
     useEffect(() => {
         // Obtenemos el token (puede ser 'token' o 'jwt' dependiendo de la implementación)
         const token = localStorage.getItem('token') || localStorage.getItem('jwt');
-        
+        const rol = localStorage.getItem('rol');
+
         if (!token) {
             router.push('/');
+        } else if (rol === 'CLIENTE') {
+            localStorage.clear();
+            router.push('/?acceso=denegado');
         } else {
             setIsAuthenticated(true);
         }
